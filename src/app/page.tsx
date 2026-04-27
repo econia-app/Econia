@@ -1,5 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  "https://pxbntlbtngcecbhcghzu.supabase.co",
+  "sb_publishable_RK6hui-9UQCUy5H36tj9_A_gcGNtfIQ"
+);
 
 const T = {
   bg: "#FAFBFD", card: "#FFFFFF", accent: "#1B6EF3", accentLight: "#EBF2FF",
@@ -122,9 +128,8 @@ function analyzeProfile(a: Record<string,string>): { gains: Gain[]; infos: Info[
   }
   if (["oui_5","oui_15","oui_15plus"].includes(a.credit))
     gains.push({ cat: "assurance", icon: "🏦", title: "Assurance emprunteur (loi Lemoine)", desc: "Changez à tout moment, économie de 5 000-15 000€ sur le prêt.", montant: "400 à 1 200€/an", annuel: [400, 1200] });
-  if (a.abonnements !== "oui_precis") {
+  if (a.abonnements !== "oui_precis")
     gains.push({ cat: "abonnement", icon: "📱", title: "Abonnements fantômes", desc: "1 Français sur 3 paie un abonnement oublié.", montant: "200 à 500€/an", annuel: [200, 500] });
-  }
   gains.push({ cat: "abonnement", icon: "⏰", title: "Alertes fin d'offre", desc: "Econia vous prévient avant que vos promos expirent.", montant: "100 à 400€/an", annuel: [100, 400] });
   if (a.logement !== "heberge")
     gains.push({ cat: "energie", icon: "⚡", title: "Optimisation énergie", desc: "Comparaison fournisseurs et option tarifaire.", montant: "100 à 300€/an", annuel: [100, 300] });
@@ -146,6 +151,8 @@ function analyzeProfile(a: Record<string,string>): { gains: Gain[]; infos: Info[
   return { gains, infos, gainMin: Math.min(gainMin, 12000), gainMax: Math.min(gainMax, 20000) };
 }
 
+const MAX_WAITLIST = 50;
+
 export default function Home() {
   const [step, setStep] = useState<"hero"|"scan"|"results">("hero");
   const [qIdx, setQIdx] = useState(0);
@@ -154,6 +161,40 @@ export default function Home() {
   const [visNum, setVisNum] = useState(0);
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [waitlistCount, setWaitlistCount] = useState(0);
+  const [emailError, setEmailError] = useState("");
+
+  useEffect(() => {
+    async function fetchCount() {
+      try {
+        const { count } = await supabase.from("waitlist").select("*", { count: "exact", head: true });
+        setWaitlistCount(count || 0);
+      } catch { /* ignore */ }
+    }
+    fetchCount();
+  }, []);
+
+  const handleSubscribe = async () => {
+    setEmailError("");
+    if (!email.includes("@") || !email.includes(".")) {
+      setEmailError("Entrez un email valide.");
+      return;
+    }
+    try {
+      const { error } = await supabase.from("waitlist").insert([
+        { email, scan_data: data ? { gains: data.gains.length, gainMin: data.gainMin, gainMax: data.gainMax, answers } : null }
+      ]);
+      if (error) {
+        if (error.code === "23505") setEmailError("Cet email est déjà inscrit !");
+        else setEmailError("Erreur, réessayez.");
+        return;
+      }
+      setSubscribed(true);
+      setWaitlistCount(c => c + 1);
+    } catch {
+      setEmailError("Erreur de connexion, réessayez.");
+    }
+  };
 
   const handleAnswer = (id: string, value: string) => {
     const next = { ...answers, [id]: value };
@@ -168,19 +209,18 @@ export default function Home() {
     else { setQIdx(ni); setVisNum(p => p + 1); }
   };
 
-  const reset = () => { setStep("hero"); setQIdx(0); setAnswers({}); setData(null); setVisNum(0); setEmail(""); setSubscribed(false); };
+  const reset = () => { setStep("hero"); setQIdx(0); setAnswers({}); setData(null); setVisNum(0); setEmail(""); setSubscribed(false); setEmailError(""); };
   const catLabels: Record<string,string> = { aide: "Aides & prestations", assurance: "Assurances", abonnement: "Abonnements & contrats", impot: "Impôts", energie: "Énergie" };
   const catColors: Record<string,string> = { aide: T.accent, assurance: T.purple, abonnement: T.orange, impot: T.green, energie: T.red };
+  const spotsLeft = Math.max(0, MAX_WAITLIST - waitlistCount);
 
   return (
     <div style={{ background: T.bg, minHeight: "100vh", fontFamily: "system-ui, -apple-system, sans-serif", color: T.text }}>
-      {/* NAV */}
       <nav style={{ position: "fixed", top: 0, left: 0, right: 0, padding: "12px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", zIndex: 100, background: `${T.bg}EE`, backdropFilter: "blur(16px)", borderBottom: "1px solid #E5E7EB44" }}>
         <div style={{ fontSize: "22px", fontWeight: 700 }}>Ec<span style={{ color: T.accent }}>o</span>nia</div>
         {step === "hero" && <button onClick={() => { setStep("scan"); setVisNum(1); }} style={{ padding: "8px 18px", background: T.accent, color: "#fff", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>Scan gratuit</button>}
       </nav>
 
-      {/* HERO */}
       {step === "hero" && (
         <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", padding: "40px 20px", background: `linear-gradient(180deg, ${T.accentLight} 0%, ${T.bg} 50%)` }}>
           <div style={{ fontSize: "42px", marginBottom: "16px" }}>🔍</div>
@@ -190,14 +230,14 @@ export default function Home() {
           <p style={{ fontSize: "16px", color: T.textSoft, maxWidth: "440px", lineHeight: 1.6, marginBottom: "24px" }}>
             Econia analyse votre situation en 3 minutes et identifie les aides, économies et optimisations que vous ne percevez probablement pas.
           </p>
-          <div style={{ padding: "8px 16px", borderRadius: "8px", background: T.orangeLight, border: `1px solid ${T.orange}33`, marginBottom: "24px", fontSize: "13px", color: T.orange, fontWeight: 600 }}>
-            🎁 Gratuit pour les 300 premiers inscrits
+          <div style={{ padding: "8px 16px", borderRadius: "8px", background: spotsLeft > 0 ? T.orangeLight : "#FEE2E2", border: `1px solid ${spotsLeft > 0 ? T.orange : T.red}33`, marginBottom: "24px", fontSize: "13px", color: spotsLeft > 0 ? T.orange : T.red, fontWeight: 600 }}>
+            {spotsLeft > 0 ? `🎁 Gratuit — Plus que ${spotsLeft} places sur ${MAX_WAITLIST}` : "⚠️ Les 50 places gratuites sont prises !"}
           </div>
           <button onClick={() => { setStep("scan"); setVisNum(1); }} style={{ padding: "16px 40px", background: T.accent, color: "#fff", border: "none", borderRadius: "12px", fontSize: "17px", fontWeight: 600, cursor: "pointer", boxShadow: "0 4px 16px rgba(27,110,243,0.3)" }}>
             Lancer mon scan gratuit
           </button>
           <div style={{ display: "flex", gap: "32px", marginTop: "48px", flexWrap: "wrap", justifyContent: "center" }}>
-            {[{ n: "10 Mds€", t: "d'aides non réclamées/an" }, { n: "750€", t: "d'abonnements oubliés/foyer" }, { n: "+5 à 8%", t: "hausse assurances/an" }].map((s, i) => (
+            {[{ n: "10 Mds€", t: "d'aides non réclamées/an" }, { n: "500€", t: "d'abonnements oubliés/foyer" }, { n: "+5 à 8%", t: "hausse assurances/an" }].map((s, i) => (
               <div key={i} style={{ textAlign: "center" }}>
                 <div style={{ fontSize: "22px", fontWeight: 700 }}>{s.n}</div>
                 <div style={{ fontSize: "12px", color: T.textMuted, marginTop: "2px" }}>{s.t}</div>
@@ -207,7 +247,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* SCAN */}
       {step === "scan" && qIdx < questions.length && (() => {
         const q = questions[qIdx];
         return (
@@ -239,7 +278,6 @@ export default function Home() {
         );
       })()}
 
-      {/* RESULTS */}
       {step === "results" && data && (() => {
         const grouped: Record<string, Gain[]> = {};
         data.gains.forEach(g => { if (!grouped[g.cat]) grouped[g.cat] = []; grouped[g.cat].push(g); });
@@ -314,9 +352,14 @@ export default function Home() {
               <div style={{ background: T.greenLight, border: `1px solid ${T.green}33`, borderRadius: "12px", padding: "20px", textAlign: "center", marginTop: "24px" }}>
                 {!subscribed ? (<>
                   <p style={{ fontSize: "15px", color: T.green, fontWeight: 600, marginBottom: "6px" }}>Econia vous accompagnera pas à pas pour récupérer cet argent.</p>
-                  <p style={{ fontSize: "13px", color: T.textSoft, marginBottom: "14px" }}>Les 300 premiers inscrits bénéficient d&apos;un accès gratuit.</p>
-                  <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Votre email" style={{ width: "100%", maxWidth: "300px", padding: "11px 14px", border: `1.5px solid ${T.border}`, borderRadius: "8px", fontSize: "14px", outline: "none", textAlign: "center" as const, boxSizing: "border-box" as const, marginBottom: "10px" }} />
-                  <div><button onClick={() => { if (email.includes("@")) setSubscribed(true); }} style={{ padding: "11px 28px", background: T.green, color: "#fff", border: "none", borderRadius: "8px", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}>Rejoindre la liste d&apos;attente</button></div>
+                  <p style={{ fontSize: "13px", color: T.textSoft, marginBottom: "14px" }}>
+                    {spotsLeft > 0
+                      ? `Les ${MAX_WAITLIST} premiers inscrits bénéficient d'un accès gratuit. Plus que ${spotsLeft} places.`
+                      : "Les places gratuites sont prises, mais inscrivez-vous pour être prévenu(e) des prochaines offres."}
+                  </p>
+                  <input value={email} onChange={e => { setEmail(e.target.value); setEmailError(""); }} placeholder="Votre email" style={{ width: "100%", maxWidth: "300px", padding: "11px 14px", border: `1.5px solid ${emailError ? T.red : T.border}`, borderRadius: "8px", fontSize: "14px", outline: "none", textAlign: "center" as const, boxSizing: "border-box" as const, marginBottom: "4px" }} />
+                  {emailError && <p style={{ fontSize: "12px", color: T.red, margin: "4px 0" }}>{emailError}</p>}
+                  <div style={{ marginTop: "8px" }}><button onClick={handleSubscribe} style={{ padding: "11px 28px", background: T.green, color: "#fff", border: "none", borderRadius: "8px", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}>Rejoindre la liste d&apos;attente</button></div>
                 </>) : (
                   <div><span style={{ fontSize: "24px" }}>✅</span><p style={{ fontSize: "15px", color: T.green, fontWeight: 600, marginTop: "8px" }}>Vous êtes inscrit(e) ! On vous prévient dès le lancement.</p></div>
                 )}
