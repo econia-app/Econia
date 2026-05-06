@@ -250,14 +250,14 @@ function analyzeProfile(a: Record<string,string>): { gains: Gain[]; infos: Info[
   const isModeste = a.revenus === "moins1500" || a.revenus === "1500-2500";
   const hasKids = a.enfants && a.enfants !== "0";
   const youngKids = a.ageEnfant === "moins3" || a.ageEnfant === "3-5";
-  if (a.revenus === "moins1500" && a.statut !== "retraite") gains.push({ cat: "aide", icon: "🏛️", title: "RSA", desc: "Revenu minimum garanti pour les personnes sans ressources.", montant: "jusqu'à 635€/mois", annuel: [3000, 7620] });
-  if (isModeste && !["retraite","etudiant","chomage"].includes(a.statut)) gains.push({ cat: "aide", icon: "💰", title: "Prime d'activité", desc: "Complément de revenus pour les travailleurs modestes.", montant: "50 à 300€/mois", annuel: [600, 3600] });
+  if (a.revenus === "moins1500" && a.statut !== "retraite") gains.push({ cat: "aide", icon: "🏛️", title: "RSA", desc: "Revenu minimum garanti pour les personnes sans ressources.", montant: "jusqu'à 651€/mois", annuel: [3500, 7820] });
+  if (isModeste && !["retraite","etudiant","chomage"].includes(a.statut)) gains.push({ cat: "aide", icon: "💰", title: "Prime d'activité", desc: "Complément de revenus pour les travailleurs modestes.", montant: "100 à 350€/mois", annuel: [600, 3600] });
   if (a.logement === "locataire" && isModeste) gains.push({ cat: "aide", icon: "🏠", title: "APL", desc: "Aide pour réduire votre loyer.", montant: "50 à 400€/mois", annuel: [600, 4800] });
   if (hasKids && ["6-10","11-17"].includes(a.ageEnfant) && isModeste) gains.push({ cat: "aide", icon: "🎒", title: "Allocation rentrée scolaire", desc: "Versée en août pour les fournitures.", montant: "427 à 466€/enfant", annuel: [427, 932] });
   if (a.statut === "retraite" && isModeste) gains.push({ cat: "aide", icon: "🧓", title: "ASPA (minimum vieillesse)", desc: "Complément pour les petites retraites.", montant: "jusqu'à 1 043€/mois", annuel: [2000, 12516] });
   if (isModeste) gains.push({ cat: "aide", icon: "🏥", title: "Complémentaire Santé Solidaire", desc: "Mutuelle gratuite ou à moins de 1€/jour.", montant: "30 à 100€/mois", annuel: [360, 1200] });
   if (isModeste) gains.push({ cat: "aide", icon: "🔥", title: "Chèque énergie", desc: "Aide au paiement des factures.", montant: "48 à 277€/an", annuel: [48, 277] });
-  if (a.handicap === "oui") gains.push({ cat: "aide", icon: "♿", title: "AAH / PCH", desc: "Allocations liées au handicap.", montant: "jusqu'à 1 041€/mois", annuel: [3000, 12492] });
+  if (a.handicap === "oui") gains.push({ cat: "aide", icon: "♿", title: "AAH / PCH", desc: "Allocations liées au handicap.", montant: "jusqu'à 1 042€/mois", annuel: [3000, 12492] });
   if (a.age === "18-25" || a.statut === "etudiant") gains.push({ cat: "aide", icon: "🎓", title: "Aides jeunes / étudiants", desc: "Bourse, Visale, aide au permis.", montant: "variable", annuel: [500, 5000] });
   if (a.assurances !== "oui_tout") { gains.push({ cat: "assurance", icon: "🛡️", title: "Assurances non comparées", desc: "Hausse de 5-8%/an. Vous surpayez probablement.", montant: "150 à 400€/an", annuel: [150, 400] }); gains.push({ cat: "assurance", icon: "💳", title: "Doublons carte bancaire", desc: "Votre CB inclut des assurances. Vérifiez les doublons.", montant: "80 à 200€/an", annuel: [80, 200] }); }
   if (["oui_5","oui_15","oui_15plus"].includes(a.credit)) gains.push({ cat: "assurance", icon: "🏦", title: "Assurance emprunteur (loi Lemoine)", desc: "Changez à tout moment. Économie 5 000-15 000€.", montant: "400 à 1 200€/an", annuel: [400, 1200] });
