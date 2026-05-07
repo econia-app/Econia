@@ -329,7 +329,7 @@ export default function Home() {
   }, [fetchProfile]);
 
   useEffect(() => {
-    supabase.from("waitlist").select("*", { count: "exact", head: true }).then(({ count }) => setWaitlistCount(count || 0));
+    supabase.from("profiles").select("*", { count: "exact", head: true }).then(({ count }) => setWaitlistCount(count || 0));
   }, []);
 
   const isPremium = profile?.is_premium || profile?.is_founder || false;
