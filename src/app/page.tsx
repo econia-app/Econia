@@ -263,7 +263,9 @@ function AuthModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () 
               {mode === "signup" ? "Se connecter" : "Créer un compte"}
             </button>
           </p>
-          <p style={{ textAlign: "center", fontSize: "11px", color: T.textMuted, marginTop: "12px" }}>Vos données sont sécurisées et ne sont jamais partagées.</p>
+          <p style={{ textAlign: "center", fontSize: "11px", color: T.textMuted, marginTop: "12px", lineHeight: 1.5 }}>
+            En créant un compte, vous acceptez nos <a href="/cgu" target="_blank" style={{ color: T.accent, textDecoration: "none" }}>CGU</a> et notre <a href="/confidentialite" target="_blank" style={{ color: T.accent, textDecoration: "none" }}>politique de confidentialité</a>.
+          </p>
         </>)}
       </div>
     </div>
@@ -522,11 +524,22 @@ export default function Home() {
         );
       })()}
 
-      {step === "hero" && (
+     {step === "hero" && (
         <footer style={{ textAlign: "center", padding: "32px 20px", borderTop: `1px solid ${T.border}` }}>
           <div style={{ fontSize: "18px", fontWeight: 700, marginBottom: "4px" }}>Ec<span style={{ color: T.accent }}>o</span>nia</div>
           <p style={{ fontSize: "12px", color: T.textMuted }}>Découvrez combien vous pourriez récupérer</p>
-          <p style={{ fontSize: "11px", color: T.textMuted, marginTop: "4px" }}>© 2026 — Estimations indicatives</p>
+          <div style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "12px", flexWrap: "wrap" }}>
+            <a href="/mentions-legales" style={{ fontSize: "12px", color: T.textMuted, textDecoration: "none" }}
+              onMouseOver={e => (e.target as HTMLElement).style.color = T.accent}
+              onMouseOut={e => (e.target as HTMLElement).style.color = T.textMuted}>Mentions légales</a>
+            <a href="/confidentialite" style={{ fontSize: "12px", color: T.textMuted, textDecoration: "none" }}
+              onMouseOver={e => (e.target as HTMLElement).style.color = T.accent}
+              onMouseOut={e => (e.target as HTMLElement).style.color = T.textMuted}>Confidentialité</a>
+            <a href="/cgu" style={{ fontSize: "12px", color: T.textMuted, textDecoration: "none" }}
+              onMouseOver={e => (e.target as HTMLElement).style.color = T.accent}
+              onMouseOut={e => (e.target as HTMLElement).style.color = T.textMuted}>CGU</a>
+          </div>
+          <p style={{ fontSize: "11px", color: T.textMuted, marginTop: "12px" }}>© 2026 Econia — Estimations indicatives basées sur les barèmes officiels</p>
         </footer>
       )}
 
