@@ -200,14 +200,17 @@ const MAX_WAITLIST = 50;
 
 // ─── AUTH MODAL ───
 function AuthModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
-  const [mode, setMode] = useState<"login"|"signup">("signup");
+const [mode, setMode] = useState<"login"|"signup">("signup");
   const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
   const [error, setError] = useState(""); const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [acceptedLegal, setAcceptedLegal] = useState(false);
+
 
   const handleSubmit = async () => {
     setError(""); setLoading(true);
     if (!email.includes("@") || password.length < 6) { setError(password.length < 8 ? "Mot de passe : 8 caractères minimum." : "Email invalide."); setLoading(false); return; }
+    if (mode === "signup" && !acceptedLegal) { setError("Vous devez accepter les CGU et la politique de confidentialité."); setLoading(false); return; }
     if (mode === "signup") {
       const { error: err } = await supabase.auth.signUp({ email, password });
       if (err) { setError(err.message === "User already registered" ? "Cet email est déjà inscrit. Connectez-vous." : err.message); setLoading(false); return; }
@@ -248,8 +251,20 @@ function AuthModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () 
             <label style={{ fontSize: "13px", color: T.textSoft, display: "block", marginBottom: "4px" }}>Mot de passe</label>
             <input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="8 caractères minimum" style={{ width: "100%", padding: "10px 14px", border: `1.5px solid ${T.border}`, borderRadius: "8px", fontSize: "14px", outline: "none", boxSizing: "border-box" as const }} onKeyDown={e => e.key === "Enter" && handleSubmit()} onFocus={e => (e.target as HTMLInputElement).style.borderColor = T.accent} onBlur={e => (e.target as HTMLInputElement).style.borderColor = T.border} />
           </div>
+          {mode === "signup" && (
+            <label style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "12px", cursor: "pointer" }}>
+              <input type="checkbox" checked={acceptedLegal} onChange={e => setAcceptedLegal(e.target.checked)} style={{ marginTop: "3px", cursor: "pointer", width: "14px", height: "14px", accentColor: T.accent, flexShrink: 0 }} />
+              <span style={{ fontSize: "12px", color: T.textSoft, lineHeight: 1.5 }}>
+                J&apos;ai lu et j&apos;accepte les{" "}
+                <a href="/cgu" target="_blank" rel="noopener noreferrer" style={{ color: T.accent, textDecoration: "none", fontWeight: 500 }}>Conditions d&apos;utilisation</a>
+                {" "}et la{" "}
+                <a href="/confidentialite" target="_blank" rel="noopener noreferrer" style={{ color: T.accent, textDecoration: "none", fontWeight: 500 }}>Politique de confidentialité</a>
+                {" "}d&apos;Econia.
+              </span>
+            </label>
+          )}
           {error && <p style={{ color: T.red, fontSize: "13px", marginBottom: "12px" }}>{error}</p>}
-          <button onClick={handleSubmit} disabled={loading} style={{ width: "100%", padding: "12px", background: T.accent, color: "#fff", border: "none", borderRadius: "8px", fontSize: "15px", fontWeight: 600, cursor: loading ? "wait" : "pointer", opacity: loading ? 0.7 : 1 }}>
+          <button onClick={handleSubmit} disabled={loading || (mode === "signup" && !acceptedLegal)} style={{ width: "100%", padding: "12px", background: T.accent, color: "#fff", border: "none", borderRadius: "8px", fontSize: "15px", fontWeight: 600, cursor: (loading || (mode === "signup" && !acceptedLegal)) ? "not-allowed" : "pointer", opacity: (loading || (mode === "signup" && !acceptedLegal)) ? 0.5 : 1 }}>
             {loading ? "..." : mode === "signup" ? "Créer mon compte gratuit" : "Me connecter"}
           </button>
 <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "16px 0" }}><div style={{ flex: 1, height: "1px", background: T.border }} /><span style={{ fontSize: "12px", color: T.textMuted }}>ou</span><div style={{ flex: 1, height: "1px", background: T.border }} /></div>
@@ -263,9 +278,7 @@ function AuthModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () 
               {mode === "signup" ? "Se connecter" : "Créer un compte"}
             </button>
           </p>
-          <p style={{ textAlign: "center", fontSize: "11px", color: T.textMuted, marginTop: "12px", lineHeight: 1.5 }}>
-            En créant un compte, vous acceptez nos <a href="/cgu" target="_blank" style={{ color: T.accent, textDecoration: "none" }}>CGU</a> et notre <a href="/confidentialite" target="_blank" style={{ color: T.accent, textDecoration: "none" }}>politique de confidentialité</a>.
-          </p>
+          <p style={{ textAlign: "center", fontSize: "11px", color: T.textMuted, marginTop: "12px" }}>Vos données sont sécurisées et ne sont jamais partagées.</p>
         </>)}
       </div>
     </div>
