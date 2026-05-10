@@ -26,7 +26,7 @@ export default function MentionsLegalesPage() {
             <ul className="list-none space-y-1 mt-3">
               <li><strong>Julien Guillard</strong></li>
               <li>Entrepreneur individuel</li>
-              <li>Adresse : 89 rue Marie Noël, 89100 Soucy, France</li>
+              <li>Adresse : 9 rue Marie Noël, 89100 Soucy, France</li>
               <li>SIRET : 881 266 266 00025</li>
               <li>Numéro d'immatriculation INSEE (SIRENE)</li>
               <li>TVA non applicable, article 293 B du Code général des impôts</li>

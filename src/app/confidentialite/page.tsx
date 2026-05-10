@@ -24,7 +24,7 @@ export default function ConfidentialitePage() {
             <h2 className="text-xl font-bold text-[#0F172A] mb-3" style={{ fontFamily: 'Syne, sans-serif' }}>1. Responsable du traitement</h2>
             <ul className="list-none space-y-1">
               <li><strong>Julien Guillard</strong> — Entrepreneur individuel</li>
-              <li>89 rue Marie Noël, 89100 Soucy, France</li>
+              <li>9 rue Marie Noël, 89100 Soucy, France</li>
               <li>Contact RGPD : econia.app@gmail.com</li>
             </ul>
             <p className="mt-3">La désignation d'un Délégué à la Protection des Données (DPO) n'est pas obligatoire au regard de la taille et de la nature de l'activité. Le responsable du traitement est votre interlocuteur pour toute question relative à vos données personnelles.</p>
