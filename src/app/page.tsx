@@ -731,7 +731,7 @@ export default function Home() {
                     )}
                   </div>
                 </div>
-              )}
+              
               {data.infos.length > 0 && (
                 <div style={{ marginTop: "24px" }}>
                   <h3 style={{ fontSize: "13px", fontWeight: 700, color: T.textSoft, textTransform: "uppercase" as const, marginBottom: "12px", fontFamily: fontSub, letterSpacing: "0.8px" }}>💡 Bon à savoir</h3>
