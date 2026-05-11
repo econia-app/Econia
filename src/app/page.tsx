@@ -19,9 +19,9 @@ const T = {
   red: "#DC2626", purple: "#7C3AED",
 };
 
-const fontTitle = "'Syne', sans-serif";
-const fontSub = "'Space Grotesk', sans-serif";
-const fontBody = "'Instrument Sans', sans-serif";
+const fontTitle = "'Fraunces', serif";
+const fontSub = "'Inter', sans-serif";
+const fontBody = "'Inter', sans-serif";
 
 // ─── GUIDES DATA ───
 const guides: Record<string, { title: string; time: string; difficulty: string; steps: { title: string; content: string }[] }> = {
@@ -392,7 +392,7 @@ export default function Home() {
     <>
       {/* GOOGLE FONTS */}
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap');
         body { font-family: ${fontBody}; color: ${T.text}; background: ${T.bg}; -webkit-font-smoothing: antialiased; margin: 0; }
         body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.018; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
         h1, h2, h3 { font-family: ${fontTitle}; }
