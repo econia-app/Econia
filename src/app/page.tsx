@@ -375,7 +375,10 @@ export default function Home() {
   };
 
   const handleLogout = async () => { await supabase.auth.signOut(); setUser(null); setProfile(null); };
-  const reset = () => { setStep("hero"); setQIdx(0); setAnswers({}); setData(null); setVisNum(0); setOpenGuide(null); };
+  const reset = () => { 
+  setStep("hero"); setQIdx(0); setAnswers({}); setData(null); setVisNum(0); setOpenGuide(null);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
   const catLabels: Record<string,string> = { aide: "Aides & prestations", assurance: "Assurances", abonnement: "Abonnements & contrats", impot: "Impôts", energie: "Énergie" };
   const catColors: Record<string,string> = { aide: T.blue, assurance: T.purple, abonnement: T.amber, impot: T.green, energie: T.red };
   const spotsLeft = Math.max(0, MAX_WAITLIST - waitlistCount);
