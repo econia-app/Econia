@@ -761,7 +761,6 @@ export default function Home() {
             </div>
           </div>
         );
-      })()}
 
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />}
       {openGuide && <GuideModal guideKey={openGuide} onClose={() => setOpenGuide(null)} />}
