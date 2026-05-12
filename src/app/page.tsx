@@ -24,7 +24,6 @@ const fontTitle = "'Fraunces', serif";
 const fontSub = "'Inter', sans-serif";
 const fontBody = "'Inter', sans-serif";
 
-// ─── GUIDES DATA ───
 
 
 const questions = [
