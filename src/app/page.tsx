@@ -11,7 +11,7 @@ const supabase = createClient(
 const T = {
   blue: "#2563EB", blueDark: "#1D4ED8", blueLight: "#EFF4FF",
   bg: "#FAFBFF", bgWarm: "#F5F3FF", bgCard: "#FFFFFF",
-  navy: "#0F172A", navy2: "#1E293B",
+  navy: "#0F172A",
   text: "#0F172A", textSoft: "#536179", textMuted: "#7A8599", textLight: "#A0AAB8",
   border: "#E2E8F0", borderLight: "#F1F5F9",
   green: "#059669", greenLight: "#ECFDF5",
@@ -214,6 +214,7 @@ export default function Home() {
   const [showAuth, setShowAuth] = useState(false);
   const [user, setUser] = useState<{id:string;email:string}|null>(null);
   const [profile, setProfile] = useState<Profile|null>(null);
+  const [openFaq, setOpenFaq] = useState<number|null>(0);
 
   const fetchProfile = useCallback(async (userId: string) => {
     const { data: p } = await supabase.from("profiles").select("*").eq("id", userId).single();
@@ -257,53 +258,373 @@ export default function Home() {
   const catColors: Record<string,string> = { aide: T.blue, assurance: T.purple, abonnement: T.amber, energie: T.red };
   const spotsLeft = Math.max(0, MAX_WAITLIST - waitlistCount);
 
+  const faqs = [
+    { q: "Comment Econia détecte mon argent perdu ?", a: "Econia croise vos réponses avec les barèmes officiels 2026 : aides CAF, tarifs énergie, moyennes assurances. L'analyse est instantanée et basée sur des données vérifiées." },
+    { q: "Mes données sont-elles en sécurité ?", a: "Oui. Hébergement européen, chiffrement des données, aucun partage avec des tiers. Suppression possible à tout moment." },
+    { q: "Econia est-il un courtier en assurance ?", a: "Non. Econia vous aide à comprendre vos contrats et vous oriente vers les comparateurs officiels. Aucune vente, aucune commission." },
+    { q: "Les 500€/an sont-ils garantis ?", a: "Non. C'est une estimation moyenne. Le montant réel dépend de votre situation. Certains récupèrent plus de 5 000€, d'autres moins de 200€." },
+    { q: "Je peux annuler quand je veux ?", a: "Oui. Sans engagement. Résiliation en un clic. Accès maintenu jusqu'à la fin de la période payée." },
+  ];
+
   return (
     <>
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap');
         body { font-family: ${fontBody}; color: ${T.text}; background: ${T.bg}; -webkit-font-smoothing: antialiased; margin: 0; }
         h1, h2, h3 { font-family: ${fontTitle}; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes drift { 0%,100% { transform: translate(0,0) scale(1); } 25% { transform: translate(40px,-30px) scale(1.04); } 50% { transform: translate(-20px,40px) scale(0.96); } 75% { transform: translate(30px,20px) scale(1.02); } }
+        @keyframes blink { 0%,100% { opacity: 1; box-shadow: 0 0 0 3px rgba(5,150,105,0.2); } 50% { opacity: 0.5; box-shadow: 0 0 0 6px rgba(5,150,105,0.05); } }
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .anim { opacity: 0; animation: fadeUp 0.7s ease forwards; }
+        .d1 { animation-delay: 0.1s; } .d2 { animation-delay: 0.2s; } .d3 { animation-delay: 0.3s; } .d4 { animation-delay: 0.4s; } .d5 { animation-delay: 0.5s; }
+        @media (max-width: 900px) {
+          .hero-grid { grid-template-columns: 1fr !important; text-align: center; }
+          .hero-card-wrap { max-width: 340px !important; margin: 0 auto; }
+          .hero-stats { justify-content: center !important; }
+          .hero-btns { justify-content: center !important; }
+          .hero-p { margin: 0 auto 28px !important; }
+          .how-grid { grid-template-columns: 1fr !important; }
+          .lev-grid { grid-template-columns: 1fr !important; }
+          .lev-last { grid-column: span 1 !important; }
+          .pr-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 640px) {
+          .hero h1 { font-size: 32px !important; }
+          .hero-card { padding: 22px !important; }
+          .hero-stats { flex-wrap: wrap; gap: 16px !important; }
+          .section { padding: 72px 16px !important; }
+          .levers-bg { margin: 0 !important; border-radius: 0 !important; padding: 56px 16px !important; }
+        }
       `}</style>
 
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, padding: "12px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", zIndex: 100, background: "rgba(250,251,255,0.85)", backdropFilter: "blur(16px)", borderBottom: `1px solid ${T.borderLight}` }}>
-        <div style={{ fontFamily: fontTitle, fontSize: "22px", fontWeight: 700, cursor: "pointer", color: T.navy }} onClick={reset}>
-          ec<span style={{ background: "linear-gradient(135deg,#2563EB,#7C3AED)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>o</span>nia
-        </div>
-        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          {user ? (
-            <>
-              <span style={{ fontSize: "12px", color: T.textMuted, maxWidth: "120px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{user.email}</span>
-              {profile?.is_founder && <span style={{ fontSize: "10px", background: T.amberLight, color: T.amber, padding: "2px 8px", borderRadius: "4px", fontWeight: 600 }}>FONDATEUR</span>}
-              <button onClick={handleLogout} style={{ padding: "6px 12px", background: "transparent", color: T.textMuted, border: `1px solid ${T.border}`, borderRadius: "6px", fontSize: "12px", cursor: "pointer" }}>Déconnexion</button>
-            </>
-          ) : (
-            <button onClick={() => setShowAuth(true)} style={{ padding: "8px 18px", background: T.navy, color: "#fff", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>Connexion</button>
-          )}
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 24px" }}>
+        <div style={{ maxWidth: "1080px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px 10px 20px", background: "rgba(255,255,255,0.75)", backdropFilter: "blur(20px) saturate(180%)", border: `1px solid rgba(226,232,240,0.6)`, borderRadius: "18px", boxShadow: "0 4px 20px rgba(15,23,42,0.04)" }}>
+          <div style={{ fontFamily: fontTitle, fontSize: "24px", fontWeight: 700, letterSpacing: "-0.8px", color: T.navy, cursor: "pointer" }} onClick={reset}>
+            ec<span style={{ background: "linear-gradient(135deg,#2563EB,#7C3AED)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>o</span>nia
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            {user ? (
+              <>
+                <span style={{ fontSize: "12px", color: T.textMuted, maxWidth: "120px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{user.email}</span>
+                {profile?.is_founder && <span style={{ fontSize: "10px", background: T.amberLight, color: T.amber, padding: "3px 8px", borderRadius: "6px", fontWeight: 700 }}>FONDATEUR</span>}
+                <button onClick={handleLogout} style={{ padding: "8px 14px", background: "transparent", color: T.textSoft, border: `1px solid ${T.border}`, borderRadius: "10px", fontSize: "12px", cursor: "pointer", fontWeight: 500 }}>Déconnexion</button>
+              </>
+            ) : (
+              <button onClick={() => setShowAuth(true)} style={{ padding: "10px 22px", background: T.navy, color: "#fff", border: "none", borderRadius: "12px", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>Connexion</button>
+            )}
+          </div>
         </div>
       </nav>
 
       {step === "hero" && (
-        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", padding: "40px 20px", background: `linear-gradient(180deg, ${T.blueLight} 0%, ${T.bg} 50%)` }}>
-          <div style={{ fontSize: "42px", marginBottom: "16px" }}>🔍</div>
-          <h1 style={{ fontSize: "clamp(30px, 7vw, 52px)", fontWeight: 600, lineHeight: 1.1, marginBottom: "16px", maxWidth: "640px", letterSpacing: "-1.5px" }}>Récupérez l&apos;argent que vous perdez <span style={{ color: T.blue }}>chaque mois</span></h1>
-          <p style={{ fontSize: "16px", color: T.textSoft, maxWidth: "440px", lineHeight: 1.6, marginBottom: "24px" }}>Econia scanne votre situation en 3 minutes et identifie chaque euro que vous pourriez récupérer.</p>
-          <div style={{ padding: "8px 16px", borderRadius: "8px", background: spotsLeft > 0 ? T.amberLight : "#FEE2E2", border: `1px solid ${spotsLeft > 0 ? T.amber : T.red}33`, marginBottom: "24px", fontSize: "13px", color: spotsLeft > 0 ? T.amber : T.red, fontWeight: 600 }}>
-            {spotsLeft > 0 ? `🎁 Accès gratuit — Plus que ${spotsLeft} places sur ${MAX_WAITLIST}` : "Les 50 places gratuites sont prises !"}
-          </div>
-          <button onClick={() => { setStep("scan"); setVisNum(1); }} style={{ padding: "16px 40px", background: T.blue, color: "#fff", border: "none", borderRadius: "12px", fontSize: "17px", fontWeight: 600, cursor: "pointer", boxShadow: "0 8px 32px rgba(37,99,235,0.25)" }}>Lancer mon scan gratuit</button>
-          <div style={{ display: "flex", gap: "32px", marginTop: "48px", flexWrap: "wrap", justifyContent: "center" }}>
-            {[{ n: "10 Mds€", t: "d'aides non réclamées/an" }, { n: "500€", t: "d'abonnements oubliés/foyer" }, { n: "+5 à 8%", t: "hausse assurances/an" }].map((s, i) => (
-              <div key={i} style={{ textAlign: "center" }}>
-                <div style={{ fontFamily: fontTitle, fontSize: "22px", fontWeight: 700, background: "linear-gradient(135deg,#2563EB,#7C3AED)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{s.n}</div>
-                <div style={{ fontSize: "12px", color: T.textMuted, marginTop: "2px" }}>{s.t}</div>
+        <>
+          <div className="hero hero-grid" style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", gap: "48px", maxWidth: "1140px", margin: "0 auto", padding: "130px 32px 80px", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+              <div style={{ position: "absolute", width: "500px", height: "500px", borderRadius: "50%", filter: "blur(100px)", opacity: 0.5, background: "rgba(37,99,235,0.1)", top: "-150px", left: "-50px", animation: "drift 25s ease-in-out infinite" }} />
+              <div style={{ position: "absolute", width: "400px", height: "400px", borderRadius: "50%", filter: "blur(100px)", opacity: 0.5, background: "rgba(124,58,237,0.07)", bottom: "-100px", right: "-50px", animation: "drift 25s ease-in-out 12s infinite" }} />
+              <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(37,99,235,0.06) 1px,transparent 1px)", backgroundSize: "32px 32px" }} />
+            </div>
+
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <div className="anim d1" style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "7px 16px 7px 10px", background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "100px", fontSize: "13px", fontWeight: 500, color: T.textSoft, marginBottom: "24px", boxShadow: "0 1px 3px rgba(15,23,42,0.04)" }}>
+                <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: T.green, boxShadow: "0 0 0 3px rgba(5,150,105,0.2)", animation: "blink 2s infinite" }} />
+                Plus que <strong style={{ color: T.navy, fontWeight: 600 }}>{spotsLeft} places</strong> gratuites sur 50
               </div>
-            ))}
+              <h1 className="anim d2" style={{ fontSize: "clamp(34px,5.5vw,56px)", fontWeight: 600, lineHeight: 1.05, letterSpacing: "-2.5px", marginBottom: "18px" }}>
+                Récupérez l&apos;argent que vous perdez{" "}
+                <span style={{ position: "relative", display: "inline-block" }}>chaque mois</span>
+              </h1>
+              <p className="anim d3 hero-p" style={{ fontSize: "16px", lineHeight: 1.75, color: T.textSoft, maxWidth: "440px", marginBottom: "32px" }}>
+                Econia scanne votre situation en 3 minutes et identifie chaque euro que vous pourriez récupérer.
+              </p>
+              <div className="anim d4 hero-btns" style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "40px" }}>
+                <button onClick={() => { setStep("scan"); setVisNum(1); }} style={{ padding: "16px 34px", background: T.blue, color: "#fff", border: "none", borderRadius: "14px", fontSize: "15px", fontWeight: 600, cursor: "pointer", boxShadow: "0 8px 32px rgba(37,99,235,0.15)" }}>
+                  Scanner ma situation →
+                </button>
+                <button onClick={() => document.getElementById("how")?.scrollIntoView({ behavior: "smooth" })} style={{ padding: "16px 34px", background: T.bgCard, color: T.navy, border: `1.5px solid ${T.border}`, borderRadius: "14px", fontSize: "15px", fontWeight: 600, cursor: "pointer" }}>
+                  Comment ça marche
+                </button>
+              </div>
+              <div className="anim d5 hero-stats" style={{ display: "flex", gap: "28px" }}>
+                <div>
+                  <div style={{ fontFamily: fontTitle, fontSize: "20px", fontWeight: 700, background: "linear-gradient(135deg,#2563EB,#7C3AED)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>10 Mds€</div>
+                  <div style={{ fontSize: "11px", color: T.textMuted, marginTop: "1px" }}>Aides non réclamées/an</div>
+                </div>
+                <div>
+                  <div style={{ fontFamily: fontTitle, fontSize: "20px", fontWeight: 700, background: "linear-gradient(135deg,#2563EB,#7C3AED)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>~500€</div>
+                  <div style={{ fontSize: "11px", color: T.textMuted, marginTop: "1px" }}>Économie moy./an</div>
+                </div>
+                <div>
+                  <div style={{ fontFamily: fontTitle, fontSize: "20px", fontWeight: 700, background: "linear-gradient(135deg,#2563EB,#7C3AED)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>3 min</div>
+                  <div style={{ fontSize: "11px", color: T.textMuted, marginTop: "1px" }}>Durée du scan</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="anim d5 hero-card-wrap" style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "center" }}>
+              <div style={{ position: "relative", maxWidth: "400px", width: "100%" }}>
+                <div style={{ position: "absolute", top: "-16px", right: "-24px", background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "14px", padding: "12px 16px", boxShadow: "0 8px 32px rgba(15,23,42,0.06)", zIndex: 3, display: "flex", alignItems: "center", gap: "10px", animation: "float 5s ease-in-out infinite" }}>
+                  <span style={{ fontSize: "18px" }}>🛡️</span>
+                  <div style={{ fontSize: "12px", fontWeight: 600, color: T.navy }}>Assurance auto<br /><small style={{ fontWeight: 400, color: T.textMuted, fontSize: "11px" }}>−240€/an détecté</small></div>
+                </div>
+                <div className="hero-card" style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "22px", padding: "28px", boxShadow: "0 20px 60px rgba(15,23,42,0.1)", position: "relative", zIndex: 2 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+                    <div style={{ fontSize: "14px", fontWeight: 700 }}>Votre analyse Econia</div>
+                    <div style={{ fontSize: "11px", fontWeight: 600, color: T.green, background: T.greenLight, padding: "4px 10px", borderRadius: "6px" }}>✓ 7 pistes</div>
+                  </div>
+                  <div style={{ fontFamily: fontTitle, fontSize: "38px", fontWeight: 700, letterSpacing: "-2px", marginBottom: "2px" }}>
+                    2 100€<span style={{ fontSize: "15px", fontWeight: 400, color: T.textMuted, letterSpacing: 0 }}> /an</span>
+                  </div>
+                  <div style={{ fontSize: "12px", color: T.textMuted, marginBottom: "20px" }}>Gain potentiel estimé</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "11px 14px", background: T.bg, border: `1px solid ${T.borderLight}`, borderRadius: "12px" }}>
+                      <span style={{ fontSize: "18px" }}>🏛️</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: "13px", fontWeight: 600 }}>Prime d&apos;activité</div>
+                        <div style={{ fontSize: "11px", color: T.textMuted }}>Non réclamée</div>
+                      </div>
+                      <div style={{ fontSize: "12px", fontWeight: 700, color: T.green }}>+200€/mois</div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "11px 14px", background: T.bg, border: `1px solid ${T.borderLight}`, borderRadius: "12px" }}>
+                      <span style={{ fontSize: "18px" }}>📱</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: "13px", fontWeight: 600 }}>3 abonnements</div>
+                        <div style={{ fontSize: "11px", color: T.textMuted }}>Probablement inutilisés</div>
+                      </div>
+                      <div style={{ fontSize: "12px", fontWeight: 700, color: T.green }}>+32€/mois</div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "11px 14px", background: T.bg, border: `1px solid ${T.borderLight}`, borderRadius: "12px" }}>
+                      <span style={{ fontSize: "18px" }}>⚡</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: "13px", fontWeight: 600 }}>Énergie</div>
+                        <div style={{ fontSize: "11px", color: T.textMuted }}>Fournisseur non comparé</div>
+                      </div>
+                      <div style={{ fontSize: "12px", fontWeight: 700, color: T.green }}>+14€/mois</div>
+                    </div>
+                  </div>
+                </div>
+                <div style={{ position: "absolute", bottom: "-12px", left: "-20px", background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "14px", padding: "12px 16px", boxShadow: "0 8px 32px rgba(15,23,42,0.06)", zIndex: 3, display: "flex", alignItems: "center", gap: "10px", animation: "float 5s ease-in-out 2.5s infinite" }}>
+                  <span style={{ fontSize: "18px" }}>⏰</span>
+                  <div style={{ fontSize: "12px", fontWeight: 600, color: T.navy }}>Alerte fin d&apos;offre<br /><small style={{ fontWeight: 400, color: T.textMuted, fontSize: "11px" }}>Free → 19,99€ dans 28j</small></div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+
+          <div style={{ padding: "24px", background: T.bgCard, borderTop: `1px solid ${T.borderLight}`, borderBottom: `1px solid ${T.borderLight}` }}>
+            <div style={{ maxWidth: "900px", margin: "0 auto", display: "flex", justifyContent: "center", gap: "36px", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: T.textSoft, fontWeight: 500 }}>
+                <div style={{ width: "32px", height: "32px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", background: T.bgWarm }}>🔒</div>
+                Données chiffrées
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: T.textSoft, fontWeight: 500 }}>
+                <div style={{ width: "32px", height: "32px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", background: T.blueLight }}>🇪🇺</div>
+                Hébergement européen
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: T.textSoft, fontWeight: 500 }}>
+                <div style={{ width: "32px", height: "32px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", background: T.greenLight }}>⚡</div>
+                Résultat en 3 min
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: T.textSoft, fontWeight: 500 }}>
+                <div style={{ width: "32px", height: "32px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", background: T.amberLight }}>✕</div>
+                Sans engagement
+              </div>
+            </div>
+          </div>
+
+          <section id="how" className="section" style={{ padding: "110px 24px" }}>
+            <div style={{ maxWidth: "1080px", margin: "0 auto" }}>
+              <div style={{ fontSize: "12px", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "2px", color: T.blue, marginBottom: "14px" }}>Fonctionnement</div>
+              <h2 style={{ fontSize: "clamp(28px,4.5vw,44px)", fontWeight: 600, letterSpacing: "-1.8px", lineHeight: 1.08, marginBottom: "14px" }}>Trois étapes.<br />Zéro prise de tête.</h2>
+              <p style={{ fontSize: "15px", color: T.textSoft, lineHeight: 1.7, maxWidth: "440px", marginBottom: "56px" }}>Econia fait le travail. Vous récoltez.</p>
+              <div className="how-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "18px" }}>
+                <div style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "22px", padding: "36px 28px" }}>
+                  <div style={{ fontFamily: fontTitle, fontSize: "48px", fontWeight: 700, lineHeight: 1, marginBottom: "16px", WebkitTextStroke: `1.5px ${T.border}`, color: "transparent" }}>01</div>
+                  <h3 style={{ fontSize: "17px", fontWeight: 600, marginBottom: "8px" }}>Répondez au scan</h3>
+                  <p style={{ fontSize: "14px", color: T.textSoft, lineHeight: 1.7 }}>19 questions simples. Revenus, logement, famille, assurances. 3 minutes, aucun document.</p>
+                </div>
+                <div style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "22px", padding: "36px 28px" }}>
+                  <div style={{ fontFamily: fontTitle, fontSize: "48px", fontWeight: 700, lineHeight: 1, marginBottom: "16px", WebkitTextStroke: `1.5px ${T.border}`, color: "transparent" }}>02</div>
+                  <h3 style={{ fontSize: "17px", fontWeight: 600, marginBottom: "8px" }}>Découvrez vos pistes</h3>
+                  <p style={{ fontSize: "14px", color: T.textSoft, lineHeight: 1.7 }}>Econia croise votre profil avec les barèmes officiels 2026. Résultat instantané, chaque euro identifié.</p>
+                </div>
+                <div style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "22px", padding: "36px 28px" }}>
+                  <div style={{ fontFamily: fontTitle, fontSize: "48px", fontWeight: 700, lineHeight: 1, marginBottom: "16px", WebkitTextStroke: `1.5px ${T.border}`, color: "transparent" }}>03</div>
+                  <h3 style={{ fontSize: "17px", fontWeight: 600, marginBottom: "8px" }}>Passez à l&apos;action</h3>
+                  <p style={{ fontSize: "14px", color: T.textSoft, lineHeight: 1.7 }}>Guides pas à pas, scripts de négociation, alertes. On vous accompagne jusqu&apos;au bout.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div id="detect" className="levers-bg" style={{ background: T.navy, borderRadius: "28px", margin: "0 24px", padding: "80px 48px", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", top: "-100px", right: "-100px", width: "500px", height: "500px", background: "radial-gradient(circle,rgba(37,99,235,0.12),transparent 70%)", borderRadius: "50%" }} />
+            <div style={{ maxWidth: "1080px", margin: "0 auto", position: "relative", zIndex: 1 }}>
+              <div style={{ fontSize: "12px", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "2px", color: "rgba(255,255,255,0.4)", marginBottom: "14px" }}>Sources d&apos;économie</div>
+              <h2 style={{ fontSize: "clamp(28px,4.5vw,44px)", fontWeight: 600, letterSpacing: "-1.8px", lineHeight: 1.08, marginBottom: "14px", color: "#fff" }}>6 leviers. Des milliers<br />d&apos;euros récupérables.</h2>
+              <p style={{ fontSize: "15px", color: "rgba(255,255,255,0.5)", lineHeight: 1.7, maxWidth: "440px", marginBottom: "56px" }}>Chaque levier a son guide d&apos;action complet, vérifié et à jour.</p>
+              <div className="lev-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "18px 20px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px" }}>
+                  <div style={{ width: "46px", height: "46px", borderRadius: "13px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", background: "linear-gradient(135deg,rgba(37,99,235,0.2),rgba(124,58,237,0.1))" }}>🏛️</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "1px" }}>Aides sociales non réclamées</h4>
+                    <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)" }}>RSA, prime d&apos;activité, APL, CSS, AAH</p>
+                  </div>
+                  <div style={{ fontSize: "12px", fontWeight: 700, color: T.green, background: "rgba(5,150,105,0.12)", padding: "5px 12px", borderRadius: "10px", whiteSpace: "nowrap" as const }}>600 — 7 000€</div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "18px 20px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px" }}>
+                  <div style={{ width: "46px", height: "46px", borderRadius: "13px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", background: "linear-gradient(135deg,rgba(124,58,237,0.2),rgba(236,72,153,0.1))" }}>🛡️</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "1px" }}>Assurances non optimisées</h4>
+                    <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)" }}>Comparaison, négociation, doublons CB</p>
+                  </div>
+                  <div style={{ fontSize: "12px", fontWeight: 700, color: T.green, background: "rgba(5,150,105,0.12)", padding: "5px 12px", borderRadius: "10px", whiteSpace: "nowrap" as const }}>150 — 1 200€</div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "18px 20px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px" }}>
+                  <div style={{ width: "46px", height: "46px", borderRadius: "13px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", background: "linear-gradient(135deg,rgba(251,191,36,0.2),rgba(249,115,22,0.1))" }}>📱</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "1px" }}>Abonnements fantômes</h4>
+                    <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)" }}>Détection, résiliation, alertes fin d&apos;offre</p>
+                  </div>
+                  <div style={{ fontSize: "12px", fontWeight: 700, color: T.green, background: "rgba(5,150,105,0.12)", padding: "5px 12px", borderRadius: "10px", whiteSpace: "nowrap" as const }}>200 — 500€</div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "18px 20px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px" }}>
+                  <div style={{ width: "46px", height: "46px", borderRadius: "13px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", background: "linear-gradient(135deg,rgba(6,182,212,0.2),rgba(37,99,235,0.1))" }}>⚡</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "1px" }}>Énergie non optimisée</h4>
+                    <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)" }}>Fournisseur, option tarifaire, puissance</p>
+                  </div>
+                  <div style={{ fontSize: "12px", fontWeight: 700, color: T.green, background: "rgba(5,150,105,0.12)", padding: "5px 12px", borderRadius: "10px", whiteSpace: "nowrap" as const }}>100 — 300€</div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "18px 20px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px" }}>
+                  <div style={{ width: "46px", height: "46px", borderRadius: "13px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", background: "linear-gradient(135deg,rgba(239,68,68,0.15),rgba(249,115,22,0.1))" }}>⏰</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "1px" }}>Fins d&apos;offre oubliées</h4>
+                    <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)" }}>Alertes + scripts de négociation</p>
+                  </div>
+                  <div style={{ fontSize: "12px", fontWeight: 700, color: T.green, background: "rgba(5,150,105,0.12)", padding: "5px 12px", borderRadius: "10px", whiteSpace: "nowrap" as const }}>100 — 400€</div>
+                </div>
+                <div className="lev-last" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "18px 20px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", gridColumn: "span 2" }}>
+                  <div style={{ width: "46px", height: "46px", borderRadius: "13px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", background: "linear-gradient(135deg,rgba(34,197,94,0.2),rgba(6,182,212,0.1))" }}>🚗</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "1px" }}>Aides mobilité &amp; véhicule</h4>
+                    <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)" }}>Leasing social, bonus écologique, rétrofit</p>
+                  </div>
+                  <div style={{ fontSize: "12px", fontWeight: 700, color: T.green, background: "rgba(5,150,105,0.12)", padding: "5px 12px", borderRadius: "10px", whiteSpace: "nowrap" as const }}>1 500 — 9 500€</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <section id="prix" className="section" style={{ background: `linear-gradient(180deg,${T.bg} 0%,${T.bgWarm} 100%)`, padding: "110px 24px" }}>
+            <div style={{ maxWidth: "1080px", margin: "0 auto" }}>
+              <div style={{ fontSize: "12px", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "2px", color: T.blue, marginBottom: "14px" }}>Tarifs</div>
+              <h2 style={{ fontSize: "clamp(28px,4.5vw,44px)", fontWeight: 600, letterSpacing: "-1.8px", lineHeight: 1.08, marginBottom: "14px" }}>Transparent. Sans piège.</h2>
+              <p style={{ fontSize: "15px", color: T.textSoft, lineHeight: 1.7, maxWidth: "440px", marginBottom: "56px" }}>Le scan est gratuit. L&apos;accompagnement complet est réservé aux membres Premium.</p>
+              <div className="pr-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", maxWidth: "800px" }}>
+                <div style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "24px", padding: "40px 36px" }}>
+                  <div style={{ fontSize: "12px", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.5px", marginBottom: "20px", color: T.textMuted }}>Gratuit</div>
+                  <div style={{ fontFamily: fontTitle, fontSize: "48px", fontWeight: 700, letterSpacing: "-2px", marginBottom: "4px" }}>0€</div>
+                  <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "32px" }}>Pour tout le monde, sans inscription</div>
+                  <ul style={{ listStyle: "none", marginBottom: "36px", padding: 0 }}>
+                    <li style={{ padding: "7px 0", fontSize: "14px", color: T.textSoft, display: "flex", alignItems: "center", gap: "10px" }}><span style={{ color: T.green, fontWeight: 800 }}>✓</span> Scan complet en 3 minutes</li>
+                    <li style={{ padding: "7px 0", fontSize: "14px", color: T.textSoft, display: "flex", alignItems: "center", gap: "10px" }}><span style={{ color: T.green, fontWeight: 800 }}>✓</span> Résultats personnalisés</li>
+                    <li style={{ padding: "7px 0", fontSize: "14px", color: T.textSoft, display: "flex", alignItems: "center", gap: "10px" }}><span style={{ color: T.green, fontWeight: 800 }}>✓</span> Liste des pistes détectées</li>
+                    <li style={{ padding: "7px 0", fontSize: "14px", color: T.textSoft, display: "flex", alignItems: "center", gap: "10px", opacity: 0.35 }}><span style={{ color: T.textLight, fontWeight: 800 }}>✗</span> Guides pas à pas</li>
+                    <li style={{ padding: "7px 0", fontSize: "14px", color: T.textSoft, display: "flex", alignItems: "center", gap: "10px", opacity: 0.35 }}><span style={{ color: T.textLight, fontWeight: 800 }}>✗</span> Scripts de négociation</li>
+                    <li style={{ padding: "7px 0", fontSize: "14px", color: T.textSoft, display: "flex", alignItems: "center", gap: "10px", opacity: 0.35 }}><span style={{ color: T.textLight, fontWeight: 800 }}>✗</span> Alertes proactives</li>
+                  </ul>
+                  <button onClick={() => { setStep("scan"); setVisNum(1); }} style={{ width: "100%", padding: "16px", background: T.bg, color: T.navy, border: `1.5px solid ${T.border}`, borderRadius: "14px", fontSize: "15px", fontWeight: 600, cursor: "pointer" }}>Lancer le scan</button>
+                </div>
+                <div style={{ background: T.bgCard, border: `2px solid ${T.blue}`, borderRadius: "24px", padding: "40px 36px", position: "relative", boxShadow: "0 20px 60px rgba(15,23,42,0.1), 0 0 0 4px rgba(37,99,235,0.06)" }}>
+                  <div style={{ position: "absolute", top: "18px", right: "18px", fontSize: "10px", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", padding: "6px 14px", borderRadius: "8px", background: "linear-gradient(135deg,#F59E0B,#D97706)", color: "#fff" }}>50 premiers</div>
+                  <div style={{ fontSize: "12px", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.5px", marginBottom: "20px", color: T.blue }}>Premium</div>
+                  <div style={{ fontFamily: fontTitle, fontSize: "48px", fontWeight: 700, letterSpacing: "-2px", marginBottom: "4px" }}>3,49€ <small style={{ fontSize: "16px", fontWeight: 400, color: T.textMuted, letterSpacing: 0 }}>/mois</small></div>
+                  <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "32px" }}>1er mois gratuit · 6 premiers mois à −50%<br />puis 6,99€/mois · sans engagement</div>
+                  <ul style={{ listStyle: "none", marginBottom: "36px", padding: 0 }}>
+                    <li style={{ padding: "7px 0", fontSize: "14px", color: T.textSoft, display: "flex", alignItems: "center", gap: "10px" }}><span style={{ color: T.green, fontWeight: 800 }}>✓</span> Tout le gratuit inclus</li>
+                    <li style={{ padding: "7px 0", fontSize: "14px", color: T.textSoft, display: "flex", alignItems: "center", gap: "10px" }}><span style={{ color: T.green, fontWeight: 800 }}>✓</span> Guides d&apos;action pas à pas</li>
+                    <li style={{ padding: "7px 0", fontSize: "14px", color: T.textSoft, display: "flex", alignItems: "center", gap: "10px" }}><span style={{ color: T.green, fontWeight: 800 }}>✓</span> Scripts de négociation personnalisés</li>
+                    <li style={{ padding: "7px 0", fontSize: "14px", color: T.textSoft, display: "flex", alignItems: "center", gap: "10px" }}><span style={{ color: T.green, fontWeight: 800 }}>✓</span> Alertes fin d&apos;offre proactives</li>
+                    <li style={{ padding: "7px 0", fontSize: "14px", color: T.textSoft, display: "flex", alignItems: "center", gap: "10px" }}><span style={{ color: T.green, fontWeight: 800 }}>✓</span> Coffre-fort documents</li>
+                    <li style={{ padding: "7px 0", fontSize: "14px", color: T.textSoft, display: "flex", alignItems: "center", gap: "10px" }}><span style={{ color: T.green, fontWeight: 800 }}>✓</span> Compteur de gains temps réel</li>
+                  </ul>
+                  <button onClick={() => setShowAuth(true)} style={{ width: "100%", padding: "16px", background: T.blue, color: "#fff", border: "none", borderRadius: "14px", fontSize: "15px", fontWeight: 600, cursor: "pointer", boxShadow: "0 8px 32px rgba(37,99,235,0.15)" }}>Rejoindre les 50 premiers →</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="faq" className="section" style={{ background: T.bgCard, padding: "110px 24px" }}>
+            <div style={{ maxWidth: "1080px", margin: "0 auto" }}>
+              <div style={{ fontSize: "12px", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "2px", color: T.blue, marginBottom: "14px" }}>FAQ</div>
+              <h2 style={{ fontSize: "clamp(28px,4.5vw,44px)", fontWeight: 600, letterSpacing: "-1.8px", lineHeight: 1.08, marginBottom: "14px" }}>Vous hésitez encore ?</h2>
+              <p style={{ fontSize: "15px", color: T.textSoft, lineHeight: 1.7, maxWidth: "440px", marginBottom: "56px" }}>Les réponses à vos questions.</p>
+              <div style={{ maxWidth: "640px" }}>
+                {faqs.map((f, i) => (
+                  <div key={i} style={{ borderBottom: `1px solid ${T.borderLight}`, padding: "22px 0" }}>
+                    <div onClick={() => setOpenFaq(openFaq === i ? null : i)} style={{ fontSize: "16px", fontWeight: 600, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", color: T.navy }}>
+                      {f.q}
+                      <div style={{ width: "26px", height: "26px", borderRadius: "8px", background: openFaq === i ? T.blueLight : T.bg, border: `1px solid ${openFaq === i ? "rgba(37,99,235,0.2)" : T.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: openFaq === i ? T.blue : T.textMuted, flexShrink: 0, transition: "transform 0.3s", transform: openFaq === i ? "rotate(45deg)" : "rotate(0)" }}>+</div>
+                    </div>
+                    <div style={{ maxHeight: openFaq === i ? "200px" : "0", overflow: "hidden", transition: "max-height 0.4s ease", fontSize: "14px", color: T.textSoft, lineHeight: 1.75, paddingTop: openFaq === i ? "14px" : "0" }}>
+                      {f.a}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <div style={{ textAlign: "center", padding: "120px 24px", position: "relative", overflow: "hidden" }}>
+            <h2 style={{ fontSize: "clamp(30px,5.5vw,48px)", fontWeight: 600, letterSpacing: "-2px", marginBottom: "8px", lineHeight: 1.08 }}>
+              Combien perdez-vous<br />
+              <span style={{ background: "linear-gradient(135deg,#2563EB,#7C3AED)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>sans le savoir</span> ?
+            </h2>
+            <p style={{ fontSize: "15px", color: T.textSoft, marginBottom: "12px" }}>3 minutes. Gratuit. Sans engagement.</p>
+            <p style={{ fontSize: "13px", color: T.textMuted, marginBottom: "32px" }}>
+              <strong style={{ color: T.amber, fontWeight: 600 }}>🎁 Offre 50 premiers :</strong> 1er mois gratuit + 6 mois à −50%
+            </p>
+            <button onClick={() => { setStep("scan"); setVisNum(1); }} style={{ padding: "16px 34px", background: T.blue, color: "#fff", border: "none", borderRadius: "14px", fontSize: "15px", fontWeight: 600, cursor: "pointer", boxShadow: "0 8px 32px rgba(37,99,235,0.15)" }}>Scanner ma situation →</button>
+          </div>
+
+          <footer style={{ background: T.navy, color: "rgba(255,255,255,0.4)", padding: "56px 32px 28px" }}>
+            <div style={{ maxWidth: "1080px", margin: "0 auto", display: "grid", gridTemplateColumns: "2.5fr 1fr 1fr 1fr", gap: "48px", marginBottom: "48px" }}>
+              <div>
+                <div style={{ fontFamily: fontTitle, fontSize: "22px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>
+                  ec<span style={{ background: "linear-gradient(135deg,#2563EB,#7C3AED)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>o</span>nia
+                </div>
+                <p style={{ fontSize: "13px", lineHeight: 1.7, maxWidth: "260px" }}>L&apos;agent IA qui détecte l&apos;argent que vous perdez sans le savoir et vous accompagne pour le récupérer.</p>
+              </div>
+              <div>
+                <h4 style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.5px", color: "rgba(255,255,255,0.6)", marginBottom: "16px" }}>Produit</h4>
+                <a href="#how" style={{ display: "block", fontSize: "13px", color: "rgba(255,255,255,0.35)", textDecoration: "none", padding: "4px 0" }}>Fonctionnement</a>
+                <a href="#detect" style={{ display: "block", fontSize: "13px", color: "rgba(255,255,255,0.35)", textDecoration: "none", padding: "4px 0" }}>Économies</a>
+                <a href="#prix" style={{ display: "block", fontSize: "13px", color: "rgba(255,255,255,0.35)", textDecoration: "none", padding: "4px 0" }}>Tarifs</a>
+                <a href="#faq" style={{ display: "block", fontSize: "13px", color: "rgba(255,255,255,0.35)", textDecoration: "none", padding: "4px 0" }}>FAQ</a>
+              </div>
+              <div>
+                <h4 style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.5px", color: "rgba(255,255,255,0.6)", marginBottom: "16px" }}>Légal</h4>
+                <a href="/mentions-legales" style={{ display: "block", fontSize: "13px", color: "rgba(255,255,255,0.35)", textDecoration: "none", padding: "4px 0" }}>Mentions légales</a>
+                <a href="/confidentialite" style={{ display: "block", fontSize: "13px", color: "rgba(255,255,255,0.35)", textDecoration: "none", padding: "4px 0" }}>Confidentialité</a>
+                <a href="/cgu" style={{ display: "block", fontSize: "13px", color: "rgba(255,255,255,0.35)", textDecoration: "none", padding: "4px 0" }}>CGU</a>
+              </div>
+              <div>
+                <h4 style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.5px", color: "rgba(255,255,255,0.6)", marginBottom: "16px" }}>Contact</h4>
+                <a href="mailto:econia.app@gmail.com" style={{ display: "block", fontSize: "13px", color: "rgba(255,255,255,0.35)", textDecoration: "none", padding: "4px 0" }}>econia.app@gmail.com</a>
+              </div>
+            </div>
+            <div style={{ maxWidth: "1080px", margin: "0 auto", paddingTop: "20px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", fontSize: "11px", color: "rgba(255,255,255,0.25)", flexWrap: "wrap", gap: "8px" }}>
+              <span>© 2026 Econia — Estimations indicatives basées sur les barèmes officiels</span>
+              <span>Fait en France 🇫🇷</span>
+            </div>
+          </footer>
+        </>
       )}
 
       {step === "scan" && qIdx < questions.length && (
-        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "100px 20px 40px" }}>
+        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "100px 20px 40px", background: T.bg }}>
           <div style={{ width: "100%", maxWidth: "480px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
               <span style={{ fontSize: "13px", color: T.textMuted, fontWeight: 600 }}>{visNum}/19</span>
@@ -312,8 +633,7 @@ export default function Home() {
               </div>
             </div>
             <h2 style={{ fontSize: "26px", fontWeight: 600, marginBottom: "6px", lineHeight: 1.2, letterSpacing: "-1px" }}>{questions[qIdx].q}</h2>
-            {"sub" in questions[qIdx] && questions[qIdx].sub && <p style={{ fontSize: "13px", color: T.textMuted, marginBottom: "20px" }}>{questions[qIdx].sub as string}</p>}
-            {!("sub" in questions[qIdx] && questions[qIdx].sub) && <div style={{ height: "20px" }} />}
+            {"sub" in questions[qIdx] && questions[qIdx].sub ? <p style={{ fontSize: "13px", color: T.textMuted, marginBottom: "20px" }}>{questions[qIdx].sub as string}</p> : <div style={{ height: "20px" }} />}
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {questions[qIdx].options.map((o, i) => (
                 <button key={i} onClick={() => handleAnswer(questions[qIdx].id, o.value)} style={{ padding: "16px 20px", background: T.bgCard, border: `1.5px solid ${T.border}`, borderRadius: "14px", fontSize: "15px", color: T.text, cursor: "pointer", textAlign: "left" as const, fontWeight: 500 }}>{o.label}</button>
@@ -324,7 +644,7 @@ export default function Home() {
       )}
 
       {step === "results" && data && (
-        <div style={{ minHeight: "100vh", padding: "100px 20px 40px" }}>
+        <div style={{ minHeight: "100vh", padding: "100px 20px 40px", background: T.bg }}>
           <div style={{ maxWidth: "600px", margin: "0 auto" }}>
             <div style={{ textAlign: "center", marginBottom: "28px" }}>
               <div style={{ fontSize: "40px", marginBottom: "10px" }}>🎯</div>
@@ -398,22 +718,9 @@ export default function Home() {
             <div style={{ textAlign: "center", marginTop: "24px" }}>
               <button onClick={reset} style={{ background: "none", border: "none", color: T.textMuted, fontSize: "13px", cursor: "pointer", textDecoration: "underline" }}>Refaire un scan</button>
             </div>
-            <p style={{ textAlign: "center", fontSize: "10px", color: T.textMuted, marginTop: "20px", lineHeight: 1.5 }}>Estimations indicatives basées sur les barèmes 2026. Seuls les organismes compétents peuvent confirmer vos droits.</p>
+            <p style={{ textAlign: "center", fontSize: "10px", color: T.textMuted, marginTop: "20px", lineHeight: 1.5 }}>Estimations indicatives basées sur les barèmes 2026.</p>
           </div>
         </div>
-      )}
-
-      {step === "hero" && (
-        <footer style={{ textAlign: "center", padding: "32px 20px", borderTop: `1px solid ${T.border}` }}>
-          <div style={{ fontFamily: fontTitle, fontSize: "18px", fontWeight: 700, marginBottom: "4px" }}>ec<span style={{ color: T.blue }}>o</span>nia</div>
-          <p style={{ fontSize: "12px", color: T.textMuted }}>Découvrez combien vous pourriez récupérer</p>
-          <div style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "12px", flexWrap: "wrap" }}>
-            <a href="/mentions-legales" style={{ fontSize: "12px", color: T.textMuted, textDecoration: "none" }}>Mentions légales</a>
-            <a href="/confidentialite" style={{ fontSize: "12px", color: T.textMuted, textDecoration: "none" }}>Confidentialité</a>
-            <a href="/cgu" style={{ fontSize: "12px", color: T.textMuted, textDecoration: "none" }}>CGU</a>
-          </div>
-          <p style={{ fontSize: "11px", color: T.textMuted, marginTop: "12px" }}>© 2026 Econia — Estimations indicatives</p>
-        </footer>
       )}
 
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />}
