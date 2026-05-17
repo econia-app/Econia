@@ -1,26 +1,192 @@
+/* ============================================================
+   Polices Google Fonts — DOIT être avant tout autre @import,
+   sinon erreur "@import rules must precede all rules" car
+   `@import "tailwindcss"` se développe en règles CSS.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+/* ============================================================
+   Econia — Design tokens (sync with src/lib/theme.ts)
+   ============================================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Couleurs marque */
+  --color-blue: #2563EB;
+  --color-blue-dark: #1D4ED8;
+  --color-blue-light: #EFF4FF;
+  --color-purple: #7C3AED;
+  --color-navy: #0F172A;
+
+  /* Surfaces */
+  --color-bg: #FAFBFF;
+  --color-bg-warm: #F5F3FF;
+  --color-bg-card: #FFFFFF;
+
+  /* Texte (contraste vérifié WCAG AA) */
+  --color-text: #0F172A;          /* 16.7:1 sur bg */
+  --color-text-soft: #475569;     /* 8.6:1  sur bg — relevé depuis #536179 */
+  --color-text-muted: #64748B;    /* 5.8:1  sur bg — relevé depuis #7A8599 */
+  --color-text-light: #94A3B8;    /* 4.5:1  sur bg — relevé depuis #A0AAB8 */
+
+  /* Bordures */
+  --color-border: #E2E8F0;
+  --color-border-light: #F1F5F9;
+
+  /* Sémantique */
+  --color-green: #059669;
+  --color-green-light: #ECFDF5;
+  --color-amber: #D97706;
+  --color-amber-light: #FEF3C7;
+  --color-red: #DC2626;
+
+  /* Typo */
+  --font-title: "Fraunces", "Times New Roman", serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Rayons */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
+
+  /* Ombres */
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 20px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 8px 32px rgba(15, 23, 42, 0.08);
+  --shadow-xl: 0 20px 60px rgba(15, 23, 42, 0.12);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ============================================================
+   Base
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html, body {
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-title);
+}
+
+button {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Sélection */
+::selection {
+  background: rgba(37, 99, 235, 0.18);
+  color: var(--color-navy);
+}
+
+/* Focus visible (a11y) */
+:focus-visible {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Accessibilité : respecter prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   Animations partagées (hero, cards, badges)
+   ============================================================ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%      { transform: translate(40px, -30px) scale(1.04); }
+  50%      { transform: translate(-20px, 40px) scale(0.96); }
+  75%      { transform: translate(30px, 20px) scale(1.02); }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 3px rgba(5,150,105,0.2); }
+  50%      { opacity: 0.5; box-shadow: 0 0 0 6px rgba(5,150,105,0.05); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+.anim { opacity: 0; animation: fadeUp 0.7s ease forwards; }
+.d1 { animation-delay: 0.1s; }
+.d2 { animation-delay: 0.2s; }
+.d3 { animation-delay: 0.3s; }
+.d4 { animation-delay: 0.4s; }
+.d5 { animation-delay: 0.5s; }
+
+/* ============================================================
+   Responsive grids (breakpoints landing)
+   ============================================================ */
+
+/* Tablette : hero passe en 1 col, how/leviers/pricing restent denses */
+@media (max-width: 900px) {
+  .hero-grid       { grid-template-columns: 1fr !important; text-align: center; }
+  .hero-card-wrap  { max-width: 340px !important; margin: 0 auto; }
+  .hero-stats      { justify-content: center !important; }
+  .hero-btns       { justify-content: center !important; }
+  .hero-p          { margin: 0 auto 28px !important; }
+  .how-grid        { grid-template-columns: 1fr !important; }
+  .pr-grid         { grid-template-columns: 1fr !important; }
+  /* leviers : on garde 2 colonnes COMPACTES (au lieu de 1 col qui crée
+     un scroll très long sur mobile) — corrigé Lot 3 audit point #7 */
+  .lev-grid        { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  .lev-last        { grid-column: span 2 !important; }
+  .lev-grid > div  { padding: 14px !important; gap: 10px !important; }
+  .lev-grid h4     { font-size: 13px !important; }
+  .lev-grid p      { font-size: 11px !important; }
+}
+
+/* Mobile : tailles compactes, padding réduit, floating cards repositionnées */
+@media (max-width: 640px) {
+  .hero h1         { font-size: 32px !important; }
+  .hero-card       { padding: 22px !important; }
+  .hero-stats      { flex-wrap: wrap; gap: 16px !important; }
+  .section         { padding: 72px 16px !important; }
+  .levers-bg       { margin: 0 !important; border-radius: 0 !important; padding: 56px 16px !important; }
+
+  /* Floating cards : ramener à l'intérieur du viewport (corrigé Lot 3 audit point #4) */
+  .hero-float        { padding: 10px 12px !important; font-size: 11px !important; }
+  .hero-float-tr     { right: 0 !important; top: -12px !important; }
+  .hero-float-bl     { left: 0 !important; bottom: -8px !important; }
+
+  /* Trust bar : grid 2x2 au lieu de wrap aléatoire */
+  .trust-bar         { gap: 16px 24px !important; }
+
+  /* Footer : grid 2 col au lieu de 4 (corrigé Lot 3 audit) */
+  .landing-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 32px 20px !important; }
+  .landing-footer-grid > div:first-child { grid-column: span 2 !important; }
+}
+
+/* Très petit mobile : leviers passent enfin en 1 colonne (≤ 380px) */
+@media (max-width: 380px) {
+  .lev-grid        { grid-template-columns: 1fr !important; }
+  .lev-last        { grid-column: span 1 !important; }
 }
