@@ -92,13 +92,13 @@ export default function Hero({ spotsLeft, onStartScan }: Props) {
       {/* Colonne droite : carte d'analyse mockup */}
       <div className="anim d5 hero-card-wrap" style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "center" }}>
         <div style={{ position: "relative", maxWidth: "400px", width: "100%" }}>
-          {/* Card flottante top-right : Assurance auto */}
+          {/* Card flottante top-right : doublon détecté (feature reveal, sans chiffre additionnel) */}
           <div className="hero-float hero-float-tr" style={{ position: "absolute", top: "-16px", right: "-24px", background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "14px", padding: "12px 16px", boxShadow: "0 8px 32px rgba(15,23,42,0.06)", zIndex: 3, display: "flex", alignItems: "center", gap: "10px", animation: "float 5s ease-in-out infinite" }}>
-            <span style={{ fontSize: "18px" }}>🛡️</span>
+            <span style={{ fontSize: "18px" }}>💳</span>
             <div style={{ fontSize: "12px", fontWeight: 600, color: T.navy }}>
-              Assurance auto
+              Doublon détecté
               <br />
-              <small style={{ fontWeight: 400, color: T.textMuted, fontSize: "11px" }}>−240€/an détecté</small>
+              <small style={{ fontWeight: 400, color: T.textMuted, fontSize: "11px" }}>Assurance déjà incluse</small>
             </div>
           </div>
 
@@ -109,15 +109,15 @@ export default function Hero({ spotsLeft, onStartScan }: Props) {
               <div style={{ fontSize: "11px", fontWeight: 600, color: T.green, background: T.greenLight, padding: "4px 10px", borderRadius: "6px" }}>✓ 7 pistes</div>
             </div>
             <div style={{ fontFamily: fonts.title, fontSize: "38px", fontWeight: 700, letterSpacing: "-2px", marginBottom: "2px" }}>
-              2 100€
+              520€
               <span style={{ fontSize: "15px", fontWeight: 400, color: T.textMuted, letterSpacing: 0 }}> /an</span>
             </div>
-            <div style={{ fontSize: "12px", color: T.textMuted, marginBottom: "20px" }}>Gain potentiel estimé</div>
+            <div style={{ fontSize: "12px", color: T.textMuted, marginBottom: "20px" }}>Exemple de profil — gain identifié</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {[
-                { icon: "🏛️", title: "Prime d'activité", sub: "Non réclamée", amount: "+200€/mois" },
-                { icon: "📱", title: "3 abonnements", sub: "Probablement inutilisés", amount: "+32€/mois" },
-                { icon: "⚡", title: "Énergie", sub: "Fournisseur non comparé", amount: "+14€/mois" },
+                { icon: "🛡️", title: "Assurance habitation", sub: "Non comparée", amount: "+18€/mois" },
+                { icon: "📱", title: "2 abonnements", sub: "Probablement inutilisés", amount: "+19€/mois" },
+                { icon: "⚡", title: "Énergie", sub: "Fournisseur non comparé", amount: "+6€/mois" },
               ].map((row, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "11px 14px", background: T.bg, border: `1px solid ${T.borderLight}`, borderRadius: "12px" }}>
                   <span style={{ fontSize: "18px" }}>{row.icon}</span>

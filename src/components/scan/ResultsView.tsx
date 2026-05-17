@@ -28,6 +28,9 @@ export default function ResultsView({
     grouped[g.cat].push(g);
   });
 
+  // Moyenne arrondie au centaine pour ancrage psychologique
+  const gainMoyen = Math.round(((data.gainMin + data.gainMax) / 2) / 100) * 100;
+
   return (
     <div style={{ minHeight: "100vh", padding: "100px 20px 40px", background: T.bg }}>
       <div style={{ maxWidth: "600px", margin: "0 auto" }}>
@@ -37,7 +40,7 @@ export default function ResultsView({
             Votre analyse Econia
           </h2>
           <p style={{ color: T.textSoft, fontSize: "14px" }}>
-            {data.gains.length} pistes d&apos;économies identifiées
+            {data.gains.length} {data.gains.length > 1 ? "pistes" : "piste"} d&apos;économies {data.gains.length > 1 ? "identifiées" : "identifiée"}
           </p>
         </div>
 
@@ -52,12 +55,59 @@ export default function ResultsView({
           }}
         >
           <div style={{ fontSize: "12px", opacity: 0.7, marginBottom: "4px" }}>Gain potentiel estimé</div>
-          <div style={{ fontFamily: fonts.title, fontSize: "36px", fontWeight: 700, letterSpacing: "-1.5px" }}>
-            {data.gainMin.toLocaleString()}€ — {data.gainMax.toLocaleString()}€
-            <span style={{ fontSize: "16px", fontWeight: 400 }}>/an</span>
+          <div style={{ fontFamily: fonts.title, fontSize: "44px", fontWeight: 700, letterSpacing: "-1.5px", lineHeight: 1 }}>
+            ≈ {gainMoyen.toLocaleString()}€
+            <span style={{ fontSize: "18px", fontWeight: 400 }}>/an</span>
           </div>
-          <div style={{ fontSize: "12px", opacity: 0.6, marginTop: "4px" }}>Hors aides déjà perçues</div>
+          <div style={{ fontSize: "12px", opacity: 0.75, marginTop: "8px" }}>
+            Fourchette : {data.gainMin.toLocaleString()}€ — {data.gainMax.toLocaleString()}€ · hors aides déjà perçues
+          </div>
         </div>
+
+        {/* CTA Premium TOP — visible avant la liste des gains (corrige bug B4) */}
+        {!isPremium && (
+          <div
+            style={{
+              background: T.bgCard,
+              border: `2px solid ${T.blue}`,
+              borderRadius: "16px",
+              padding: "18px 20px",
+              marginBottom: "24px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "12px",
+              flexWrap: "wrap",
+              boxShadow: "0 8px 24px rgba(37,99,235,0.08)",
+            }}
+          >
+            <div style={{ flex: "1 1 220px" }}>
+              <div style={{ fontSize: "14px", fontWeight: 700, color: T.navy, marginBottom: "2px" }}>
+                🔓 Débloque les guides d&apos;action
+              </div>
+              <div style={{ fontSize: "12px", color: T.textSoft, lineHeight: 1.4 }}>
+                {spotsLeft > 0 ? `Premium Founders : 1er mois gratuit · 3,49€/mois pendant 6 mois` : `Premium 6,99€/mois · sans engagement`}
+              </div>
+            </div>
+            <button
+              onClick={onShowAuth}
+              style={{
+                padding: "12px 22px",
+                background: T.blue,
+                color: "#fff",
+                border: "none",
+                borderRadius: "12px",
+                fontSize: "13px",
+                fontWeight: 700,
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                minHeight: 44,
+              }}
+            >
+              {user ? "Passer Premium" : "Créer mon compte"}
+            </button>
+          </div>
+        )}
 
         {Object.entries(grouped).map(([cat, items]) => (
           <div key={cat} style={{ marginBottom: "20px" }}>

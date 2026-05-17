@@ -5,7 +5,7 @@ const SITE_URL = "https://econia.fr";
 const SITE_NAME = "Econia";
 const SITE_TITLE = "Econia — Récupérez l'argent que vous perdez chaque mois";
 const SITE_DESCRIPTION =
-  "Econia scanne votre situation en 3 minutes et identifie chaque euro que vous pourriez récupérer : aides non réclamées, assurances surpayées, abonnements oubliés. En moyenne 500€/an.";
+  "Scan gratuit en 3 minutes : aides non réclamées, assurances, abonnements, énergie. En moyenne 500€/an récupérés.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

@@ -71,6 +71,18 @@ export default function Home() {
       .then(({ count }) => setWaitlistCount(count || 0));
   }, []);
 
+  // === Deep-link /scan : auto-démarrer le scan via ?start=scan ===
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("start") === "scan") {
+      setStep("scan");
+      setVisNum(1);
+      // Nettoie l'URL pour éviter de re-déclencher au refresh
+      window.history.replaceState({}, "", "/");
+    }
+  }, []);
+
   const isPremium = profile?.is_premium || profile?.is_founder || false;
   const spotsLeft = Math.max(0, MAX_WAITLIST - waitlistCount);
 
@@ -144,7 +156,7 @@ export default function Home() {
         </>
       )}
 
-      {step === "scan" && <ScanFlow qIdx={qIdx} visNum={visNum} onAnswer={handleAnswer} />}
+      {step === "scan" && <ScanFlow qIdx={qIdx} visNum={visNum} answers={answers} onAnswer={handleAnswer} />}
 
       {step === "results" && data && (
         <ResultsView

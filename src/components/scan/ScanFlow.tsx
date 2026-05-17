@@ -5,22 +5,36 @@ import { questions } from "@/lib/questions";
 type Props = {
   qIdx: number;
   visNum: number;
+  answers: Record<string, string>;
   onAnswer: (id: string, value: string) => void;
 };
 
-export default function ScanFlow({ qIdx, visNum, onAnswer }: Props) {
+export default function ScanFlow({ qIdx, visNum, answers, onAnswer }: Props) {
   if (qIdx >= questions.length) return null;
   const q = questions[qIdx];
+
+  // Nombre de questions effectivement visibles pour ce profil (dynamique)
+  // Pour chaque question conditionnelle, on évalue showIf avec les réponses
+  // actuelles. Min 1 pour éviter division par 0.
+  const totalVisible = Math.max(
+    1,
+    questions.filter((qq) => !qq.showIf || qq.showIf(answers)).length
+  );
+  // Bornage : le compteur affiché ne peut pas dépasser le total
+  const displayNum = Math.min(visNum, totalVisible);
+  const progressPct = (displayNum / totalVisible) * 100;
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "100px 20px 40px", background: T.bg }}>
       <div style={{ width: "100%", maxWidth: "480px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
-          <span style={{ fontSize: "13px", color: T.textMuted, fontWeight: 600 }}>{visNum}/19</span>
+          <span style={{ fontSize: "13px", color: T.textMuted, fontWeight: 600 }}>
+            {displayNum}/{totalVisible}
+          </span>
           <div style={{ width: "140px", height: "5px", background: T.borderLight, borderRadius: "3px", overflow: "hidden" }}>
             <div
               style={{
-                width: `${(visNum / 19) * 100}%`,
+                width: `${progressPct}%`,
                 height: "100%",
                 background: `linear-gradient(90deg, ${T.blue}, ${T.purple})`,
                 borderRadius: "3px",
