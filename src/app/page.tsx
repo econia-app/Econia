@@ -17,6 +17,7 @@ import Pricing from "@/components/landing/Pricing";
 import FaqSection from "@/components/landing/FaqSection";
 import FinalCta from "@/components/landing/FinalCta";
 import LandingFooter from "@/components/landing/LandingFooter";
+import ResumeScanBanner from "@/components/landing/ResumeScanBanner";
 
 import ScanFlow from "@/components/scan/ScanFlow";
 import ResultsView from "@/components/scan/ResultsView";
@@ -86,8 +87,15 @@ export default function Home() {
   const isPremium = profile?.is_premium || profile?.is_founder || false;
   const spotsLeft = Math.max(0, MAX_WAITLIST - waitlistCount);
 
+  // === Gain estimé pour le bandeau "reprendre mon scan" ===
+  // Calculé à partir du scan_data persisté en BDD
+  const previousScanResult = profile?.scan_data ? analyzeProfile(profile.scan_data) : null;
+  const previousGainAvg = previousScanResult
+    ? Math.round(((previousScanResult.gainMin + previousScanResult.gainMax) / 2) / 100) * 100
+    : 0;
+
   // === Handlers ===
-  const handleAnswer = (id: string, value: string) => {
+  const handleAnswer = async (id: string, value: string) => {
     const next = { ...answers, [id]: value };
     setAnswers(next);
     let ni = qIdx + 1;
@@ -104,7 +112,30 @@ export default function Home() {
       const result = analyzeProfile(next);
       setData(result);
       setStep("results");
-      if (user) supabase.from("profiles").update({ scan_data: next }).eq("id", user.id);
+      // Persiste le scan_data en BDD si user connecté.
+      // Upsert : si la ligne profile n'existe pas (cas rare), elle est créée.
+      if (user) {
+        try {
+          const { error } = await supabase
+            .from("profiles")
+            .upsert(
+              { id: user.id, email: user.email, scan_data: next },
+              { onConflict: "id" }
+            );
+          if (error) {
+            console.error("[Econia] Erreur enregistrement scan_data:", error.message, error);
+            alert(
+              "Ton scan a été calculé, mais on n'a pas pu l'enregistrer en base. " +
+                "Reconnecte-toi et réessaie, ou contacte le support."
+            );
+          } else {
+            // Recharge le profil pour avoir scan_data à jour côté front
+            fetchProfile(user.id);
+          }
+        } catch (e) {
+          console.error("[Econia] Exception enregistrement scan_data:", e);
+        }
+      }
     } else {
       setQIdx(ni);
       setVisNum((p) => p + 1);
@@ -142,6 +173,11 @@ export default function Home() {
         onLogout={handleLogout}
         onShowAuth={() => setShowAuth(true)}
       />
+
+      {/* Bandeau "tu as déjà un scan" pour les users connectés revenants */}
+      {step === "hero" && user && profile?.scan_data && (
+        <ResumeScanBanner gainEstime={previousGainAvg} />
+      )}
 
       {step === "hero" && (
         <>
