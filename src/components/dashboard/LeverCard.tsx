@@ -1,9 +1,25 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { T, catColors } from "@/lib/theme";
 import { guides, gainToGuide } from "@/lib/guides";
 import type { Gain } from "@/lib/analyze";
 import type { ActionState, ActionStatus } from "@/lib/supabase";
+
+/**
+ * Mapping gain → URL du mini-scan dédié.
+ * À étendre quand on créera les autres mini-scans (abonnements, leasing, etc.)
+ */
+const MINI_SCAN_URL: Record<string, string> = {
+  "Prime d'activité": "/aide/prime-activite",
+  RSA: "/aide/rsa",
+  APL: "/aide/apl",
+  "Allocation rentrée scolaire": "/aide/ars",
+  "Complémentaire Santé Solidaire": "/aide/complementaire-sante",
+  "Chèque énergie": "/aide/cheque-energie",
+  "ASPA (minimum vieillesse)": "/aide/aspa",
+  "Assurance emprunteur (loi Lemoine)": "/aide/loi-lemoine",
+};
 
 type Props = {
   gain: Gain;
@@ -33,12 +49,14 @@ export default function LeverCard({
   onShowAuth,
   user,
 }: Props) {
+  const router = useRouter();
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const status: ActionStatus = state?.status ?? "todo";
   const statusUI = STATUS_LABELS[status];
 
   const guideKey = gainToGuide[gain.title];
   const guide = guideKey ? guides[guideKey] : null;
+  const miniScanUrl = MINI_SCAN_URL[gain.title]; // ex: "/aide/prime-activite"
 
   return (
     <div
@@ -156,8 +174,27 @@ export default function LeverCard({
         </div>
       </div>
 
-      {/* Action : voir le guide / déclarer le montant si done */}
+      {/* Actions disponibles */}
       <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", paddingTop: "12px", borderTop: `1px solid ${T.borderLight}` }}>
+        {/* Bouton mini-scan dédié si disponible pour ce levier */}
+        {miniScanUrl && (
+          <button
+            onClick={() => router.push(miniScanUrl)}
+            style={{
+              padding: "10px 14px",
+              background: T.greenLight,
+              color: T.green,
+              border: `1px solid ${T.green}33`,
+              borderRadius: "10px",
+              fontSize: "12px",
+              fontWeight: 700,
+              cursor: "pointer",
+              textAlign: "left",
+            }}
+          >
+            🎯 Calculer mon montant exact
+          </button>
+        )}
         {guide && (
           <button
             onClick={() => {

@@ -35,24 +35,36 @@ export default function GainSummary({ gainPotentielMin, gainPotentielMax, gainRe
         </div>
       </div>
 
-      {/* Bloc compteur lifetime */}
+      {/* Bloc compteur lifetime — gain réellement déclaré par l'utilisateur */}
       <div
         style={{
           background: T.bgCard,
-          border: `1.5px solid ${T.green}33`,
+          border: `1.5px solid ${gainRecupere > 0 ? T.green + "55" : T.border}`,
           borderRadius: "20px",
           padding: "24px",
           position: "relative",
         }}
       >
-        <div style={{ fontSize: "12px", color: T.textMuted, marginBottom: "4px", fontWeight: 500 }}>
+        <div style={{ fontSize: "12px", color: T.textMuted, marginBottom: "6px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
           Déjà récupéré
         </div>
-        <div style={{ fontFamily: fonts.title, fontSize: "clamp(28px, 4vw, 36px)", fontWeight: 700, letterSpacing: "-1px", lineHeight: 1, color: T.green, marginBottom: "4px" }}>
+        <div
+          style={{
+            fontFamily: fonts.title,
+            fontSize: "clamp(28px, 4vw, 36px)",
+            fontWeight: 700,
+            letterSpacing: "-1px",
+            lineHeight: 1,
+            color: gainRecupere > 0 ? T.green : T.textLight,
+            marginBottom: "8px",
+          }}
+        >
           {gainRecupere.toLocaleString()}€
         </div>
-        <div style={{ fontSize: "12px", color: T.textMuted }}>
-          déclaré à vie
+        <div style={{ fontSize: "12px", color: T.textSoft, lineHeight: 1.5 }}>
+          {gainRecupere > 0
+            ? "Total déclaré depuis ton inscription"
+            : "Marque un levier comme « Terminé » pour suivre ta progression"}
         </div>
       </div>
     </div>
