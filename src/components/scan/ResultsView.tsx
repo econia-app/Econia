@@ -37,7 +37,7 @@ export default function ResultsView({
         <div style={{ textAlign: "center", marginBottom: "28px" }}>
           <div style={{ fontSize: "40px", marginBottom: "10px" }}>🎯</div>
           <h2 style={{ fontSize: "30px", fontWeight: 600, marginBottom: "6px", letterSpacing: "-1.5px" }}>
-            Votre analyse Econia
+            Ton analyse Econia
           </h2>
           <p style={{ color: T.textSoft, fontSize: "14px" }}>
             {data.gains.length} {data.gains.length > 1 ? "pistes" : "piste"} d&apos;économies {data.gains.length > 1 ? "identifiées" : "identifiée"}
@@ -159,7 +159,7 @@ export default function ResultsView({
                           style={{ width: "100%", padding: "10px", background: T.bg, color: T.textMuted, border: `1px dashed ${T.border}`, borderRadius: "10px", fontSize: "12px", cursor: "pointer" }}
                         >
                           🔒 Guide pas à pas ({gd.steps.length} étapes) —{" "}
-                          {user ? "Econia Premium" : "Créez un compte"}
+                          {user ? "Econia Premium" : "Crée un compte"}
                         </button>
                       )}
                     </div>
@@ -190,12 +190,12 @@ export default function ResultsView({
         {!user && (
           <div style={{ background: T.greenLight, border: `1px solid ${T.green}33`, borderRadius: "14px", padding: "22px", textAlign: "center", marginTop: "28px" }}>
             <p style={{ fontSize: "15px", color: T.green, fontWeight: 700, marginBottom: "8px" }}>
-              Créez votre compte pour sauvegarder vos résultats
+              Crée ton compte pour sauvegarder tes résultats
             </p>
             <p style={{ fontSize: "13px", color: T.textSoft, marginBottom: "16px" }}>
               {spotsLeft > 0
                 ? `50 premiers : 1er mois gratuit + 3,49€/mois pendant 6 mois. Plus que ${spotsLeft} places.`
-                : "Inscrivez-vous pour être prévenu(e) des prochaines offres."}
+                : "Inscris-toi pour être prévenu·e des prochaines offres."}
             </p>
             <button
               onClick={onShowAuth}

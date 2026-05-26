@@ -13,10 +13,10 @@ export default function FaqSection() {
           FAQ
         </div>
         <h2 style={{ fontSize: "clamp(28px,4.5vw,44px)", fontWeight: 600, letterSpacing: "-1.8px", lineHeight: 1.08, marginBottom: "14px" }}>
-          Vous hésitez encore ?
+          Tu hésites encore ?
         </h2>
         <p style={{ fontSize: "15px", color: T.textSoft, lineHeight: 1.7, maxWidth: "440px", marginBottom: "56px" }}>
-          Les réponses à vos questions.
+          Les réponses à tes questions.
         </p>
         <div style={{ maxWidth: "640px" }}>
           {faqs.map((f, i) => {

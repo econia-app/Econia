@@ -14,7 +14,7 @@ export default function LandingFooter() {
             nia
           </div>
           <p style={{ fontSize: "13px", lineHeight: 1.7, maxWidth: "260px" }}>
-            L&apos;agent IA qui détecte l&apos;argent que vous perdez sans le savoir et vous accompagne pour le récupérer.
+            L&apos;agent IA qui détecte l&apos;argent que tu perds sans le savoir et t&apos;accompagne pour le récupérer.
           </p>
         </div>
         <div>

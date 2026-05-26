@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 const SITE_URL = "https://econia.fr";
 const SITE_NAME = "Econia";
-const SITE_TITLE = "Econia — Récupérez l'argent que vous perdez chaque mois";
+const SITE_TITLE = "Econia — Récupère l'argent que tu perds chaque mois";
 const SITE_DESCRIPTION =
   "Scan gratuit en 3 minutes : aides non réclamées, assurances, abonnements, énergie. En moyenne 500€/an récupérés.";
 
@@ -29,6 +31,11 @@ export const metadata: Metadata = {
     "budget",
     "France",
     "argent perdu",
+    "loi Lemoine",
+    "chèque énergie",
+    "ASPA",
+    "ARS",
+    "CSS",
   ],
   referrer: "origin-when-cross-origin",
   creator: "Econia",
@@ -53,7 +60,7 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Econia — Récupérez l'argent que vous perdez chaque mois",
+        alt: "Econia — Récupère l'argent que tu perds chaque mois",
       },
     ],
   },
@@ -102,7 +109,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        {/* Vercel Analytics — pageviews + events anonymes, conforme RGPD (pas de cookie tiers) */}
+        <Analytics />
+        {/* Vercel Speed Insights — Core Web Vitals en continu */}
+        <SpeedInsights />
+      </body>
     </html>
   );
 }

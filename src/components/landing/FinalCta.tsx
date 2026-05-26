@@ -9,7 +9,7 @@ export default function FinalCta({ onStartScan }: Props) {
   return (
     <div style={{ textAlign: "center", padding: "120px 24px", position: "relative", overflow: "hidden" }}>
       <h2 style={{ fontSize: "clamp(30px,5.5vw,48px)", fontWeight: 600, letterSpacing: "-2px", marginBottom: "8px", lineHeight: 1.08 }}>
-        Combien perdez-vous
+        Combien tu perds
         <br />
         <span style={{ background: `linear-gradient(135deg, ${T.blue}, ${T.purple})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
           sans le savoir

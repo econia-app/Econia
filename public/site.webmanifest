@@ -1,7 +1,7 @@
 {
   "name": "Econia",
   "short_name": "Econia",
-  "description": "Récupérez l'argent que vous perdez chaque mois.",
+  "description": "Récupère l'argent que tu perds chaque mois.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FAFBFF",

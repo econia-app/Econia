@@ -4,18 +4,18 @@ import { T, fonts } from "@/lib/theme";
 const steps = [
   {
     n: "01",
-    title: "Répondez au scan",
+    title: "Réponds au scan",
     desc: "19 questions simples. Revenus, logement, famille, assurances. 3 minutes, aucun document.",
   },
   {
     n: "02",
-    title: "Découvrez vos pistes",
-    desc: "Econia croise votre profil avec les barèmes officiels 2026. Résultat instantané, chaque euro identifié.",
+    title: "Découvre tes pistes",
+    desc: "Econia croise ton profil avec les barèmes officiels 2026. Résultat instantané, chaque euro identifié.",
   },
   {
     n: "03",
-    title: "Passez à l'action",
-    desc: "Guides pas à pas, scripts de négociation, alertes. On vous accompagne jusqu'au bout.",
+    title: "Passe à l'action",
+    desc: "Guides pas à pas, scripts de négociation, alertes. On t'accompagne jusqu'au bout.",
   },
 ];
 
@@ -32,7 +32,7 @@ export default function HowItWorks() {
           Zéro prise de tête.
         </h2>
         <p style={{ fontSize: "15px", color: T.textSoft, lineHeight: 1.7, maxWidth: "440px", marginBottom: "56px" }}>
-          Econia fait le travail. Vous récoltez.
+          Econia fait le travail. Tu récoltes.
         </p>
         <div className="how-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "18px" }}>
           {steps.map((s, i) => (

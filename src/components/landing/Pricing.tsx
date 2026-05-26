@@ -67,10 +67,42 @@ export default function Pricing({ onStartScan, onSignup }: Props) {
             <div style={{ fontFamily: fonts.title, fontSize: "48px", fontWeight: 700, letterSpacing: "-2px", marginBottom: "4px" }}>
               3,49€ <small style={{ fontSize: "16px", fontWeight: 400, color: T.textMuted, letterSpacing: 0 }}>/mois</small>
             </div>
-            <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "32px" }}>
-              1er mois gratuit · 6 premiers mois à −50%
-              <br />
-              puis 6,99€/mois · sans engagement
+            <div style={{ fontSize: "13px", color: T.textMuted, marginBottom: "20px" }}>
+              Tarif Founder à vie · sans engagement
+            </div>
+
+            {/* Timeline offre Founder en 3 lignes lisibles */}
+            <div
+              style={{
+                background: T.bg,
+                border: `1px solid ${T.borderLight}`,
+                borderRadius: "12px",
+                padding: "14px 16px",
+                marginBottom: "28px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "10px",
+                fontSize: "13px",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ fontSize: "16px" }}>🎁</span>
+                <div style={{ flex: 1, color: T.textSoft }}>
+                  <strong style={{ color: T.navy, fontWeight: 600 }}>1er mois</strong> · gratuit
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ fontSize: "16px" }}>💸</span>
+                <div style={{ flex: 1, color: T.textSoft }}>
+                  <strong style={{ color: T.navy, fontWeight: 600 }}>Mois 2 à 7</strong> · 3,49€/mois (−50 %)
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ fontSize: "16px" }}>📌</span>
+                <div style={{ flex: 1, color: T.textSoft }}>
+                  <strong style={{ color: T.navy, fontWeight: 600 }}>Ensuite</strong> · 6,99€/mois (tarif Founder bloqué à vie)
+                </div>
+              </div>
             </div>
             <ul style={{ listStyle: "none", marginBottom: "36px", padding: 0 }}>
               {premiumFeatures.map((f, i) => (

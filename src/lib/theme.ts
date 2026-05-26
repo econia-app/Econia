@@ -51,7 +51,7 @@ export const MAX_WAITLIST = 50;
 export const faqs = [
   {
     q: "Comment Econia détecte mon argent perdu ?",
-    a: "Econia croise vos réponses avec les barèmes officiels 2026 : aides CAF, tarifs énergie, moyennes assurances. L'analyse est instantanée et basée sur des données vérifiées.",
+    a: "Econia croise tes réponses avec les barèmes officiels 2026 : aides CAF, tarifs énergie, moyennes assurances. L'analyse est instantanée et basée sur des données vérifiées.",
   },
   {
     q: "Mes données sont-elles en sécurité ?",
@@ -59,11 +59,11 @@ export const faqs = [
   },
   {
     q: "Econia est-il un courtier en assurance ?",
-    a: "Non. Econia vous aide à comprendre vos contrats et vous oriente vers les comparateurs officiels. Aucune vente, aucune commission.",
+    a: "Non. Econia t'aide à comprendre tes contrats et t'oriente vers les comparateurs officiels. Aucune vente, aucune commission.",
   },
   {
     q: "Les 500€/an sont-ils garantis ?",
-    a: "Non. C'est une estimation moyenne. Le montant réel dépend de votre situation. Certains récupèrent plus de 5 000€, d'autres moins de 200€.",
+    a: "Non. C'est une estimation moyenne. Le montant réel dépend de ta situation. Certains récupèrent plus de 5 000€, d'autres moins de 200€.",
   },
   {
     q: "Je peux annuler quand je veux ?",
