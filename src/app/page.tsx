@@ -18,6 +18,8 @@ import FaqSection from "@/components/landing/FaqSection";
 import FinalCta from "@/components/landing/FinalCta";
 import LandingFooter from "@/components/landing/LandingFooter";
 import ResumeScanBanner from "@/components/landing/ResumeScanBanner";
+import JsonLd from "@/components/seo/JsonLd";
+import { faqPageSchema } from "@/lib/schemas";
 
 import ScanFlow from "@/components/scan/ScanFlow";
 import ResultsView from "@/components/scan/ResultsView";
@@ -25,7 +27,6 @@ import ResultsView from "@/components/scan/ResultsView";
 type Step = "hero" | "scan" | "results";
 
 export default function Home() {
-  // === State global ===
   const [step, setStep] = useState<Step>("hero");
   const [qIdx, setQIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -37,7 +38,6 @@ export default function Home() {
   const [user, setUser] = useState<{ id: string; email: string } | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
 
-  // === Profil utilisateur ===
   const fetchProfile = useCallback(async (userId: string) => {
     const { data: p } = await supabase.from("profiles").select("*").eq("id", userId).single();
     if (p) setProfile(p as Profile);
@@ -64,7 +64,6 @@ export default function Home() {
     return () => subscription.unsubscribe();
   }, [fetchProfile]);
 
-  // === Compteur waitlist ===
   useEffect(() => {
     supabase
       .from("profiles")
@@ -72,14 +71,12 @@ export default function Home() {
       .then(({ count }) => setWaitlistCount(count || 0));
   }, []);
 
-  // === Deep-link /scan : auto-démarrer le scan via ?start=scan ===
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     if (params.get("start") === "scan") {
       setStep("scan");
       setVisNum(1);
-      // Nettoie l'URL pour éviter de re-déclencher au refresh
       window.history.replaceState({}, "", "/");
     }
   }, []);
@@ -87,14 +84,11 @@ export default function Home() {
   const isPremium = profile?.is_premium || profile?.is_founder || false;
   const spotsLeft = Math.max(0, MAX_WAITLIST - waitlistCount);
 
-  // === Gain estimé pour le bandeau "reprendre mon scan" ===
-  // Calculé à partir du scan_data persisté en BDD
   const previousScanResult = profile?.scan_data ? analyzeProfile(profile.scan_data) : null;
   const previousGainAvg = previousScanResult
     ? Math.round(((previousScanResult.gainMin + previousScanResult.gainMax) / 2) / 100) * 100
     : 0;
 
-  // === Handlers ===
   const handleAnswer = async (id: string, value: string) => {
     const next = { ...answers, [id]: value };
     setAnswers(next);
@@ -112,8 +106,6 @@ export default function Home() {
       const result = analyzeProfile(next);
       setData(result);
       setStep("results");
-      // Persiste le scan_data en BDD si user connecté.
-      // Upsert : si la ligne profile n'existe pas (cas rare), elle est créée.
       if (user) {
         try {
           const { error } = await supabase
@@ -129,7 +121,6 @@ export default function Home() {
                 "Reconnecte-toi et réessaie, ou contacte le support."
             );
           } else {
-            // Recharge le profil pour avoir scan_data à jour côté front
             fetchProfile(user.id);
           }
         } catch (e) {
@@ -163,7 +154,6 @@ export default function Home() {
     setVisNum(1);
   };
 
-  // === Render ===
   return (
     <>
       <Navbar
@@ -174,13 +164,13 @@ export default function Home() {
         onShowAuth={() => setShowAuth(true)}
       />
 
-      {/* Bandeau "tu as déjà un scan" pour les users connectés revenants */}
       {step === "hero" && user && profile?.scan_data && (
         <ResumeScanBanner gainEstime={previousGainAvg} />
       )}
 
       {step === "hero" && (
         <>
+          <JsonLd data={faqPageSchema} />
           <Hero spotsLeft={spotsLeft} onStartScan={startScan} />
           <TrustBar />
           <HowItWorks />

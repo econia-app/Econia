@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import JsonLd from "@/components/seo/JsonLd";
+import { organizationSchema, websiteSchema } from "@/lib/schemas";
 import "./globals.css";
 
 const SITE_URL = "https://econia.fr";
@@ -110,10 +112,10 @@ export default function RootLayout({
   return (
     <html lang="fr" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
+        <JsonLd data={organizationSchema} />
+        <JsonLd data={websiteSchema} />
         {children}
-        {/* Vercel Analytics — pageviews + events anonymes, conforme RGPD (pas de cookie tiers) */}
         <Analytics />
-        {/* Vercel Speed Insights — Core Web Vitals en continu */}
         <SpeedInsights />
       </body>
     </html>
