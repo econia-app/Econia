@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import JsonLd from "@/components/seo/JsonLd";
+import InstallPWABanner from "@/components/InstallPWABanner";
 import { organizationSchema, websiteSchema } from "@/lib/schemas";
 import "./globals.css";
 
@@ -10,6 +11,14 @@ const SITE_NAME = "Econia";
 const SITE_TITLE = "Econia — Récupère l'argent que tu perds chaque mois";
 const SITE_DESCRIPTION =
   "Scan gratuit en 3 minutes : aides non réclamées, assurances, abonnements, énergie. En moyenne 500€/an récupérés.";
+
+// ─────────────────────────────────────────────────────────────────
+// CODES DE VÉRIFICATION SEARCH ENGINES
+// À remplir avec les codes fournis par Search Console / Bing Webmaster.
+// Procédure dans docs/seo-search-console.md
+// ─────────────────────────────────────────────────────────────────
+const GOOGLE_SITE_VERIFICATION = ""; // ex: "abc123..."
+const BING_SITE_VERIFICATION = ""; // ex: "ABC123..."
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -92,6 +101,12 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  verification: {
+    ...(GOOGLE_SITE_VERIFICATION ? { google: GOOGLE_SITE_VERIFICATION } : {}),
+    ...(BING_SITE_VERIFICATION
+      ? { other: { "msvalidate.01": BING_SITE_VERIFICATION } }
+      : {}),
+  },
 };
 
 export const viewport: Viewport = {
@@ -115,6 +130,7 @@ export default function RootLayout({
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
         {children}
+        <InstallPWABanner />
         <Analytics />
         <SpeedInsights />
       </body>

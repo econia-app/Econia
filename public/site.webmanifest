@@ -1,14 +1,38 @@
 {
-  "name": "Econia",
+  "name": "Econia — Récupère l'argent que tu perds",
   "short_name": "Econia",
-  "description": "Récupère l'argent que tu perds chaque mois.",
+  "description": "Récupère l'argent que tu perds chaque mois. Aides non réclamées, assurances, abonnements, énergie.",
   "start_url": "/",
+  "scope": "/",
+  "id": "/?source=pwa",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#FAFBFF",
   "theme_color": "#0F172A",
   "lang": "fr",
+  "dir": "ltr",
+  "categories": ["finance", "productivity", "utilities", "lifestyle"],
   "icons": [
-    { "src": "/android-chrome-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/android-chrome-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
-  ]
+    { "src": "/android-chrome-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/android-chrome-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/android-chrome-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/android-chrome-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Lancer le scan",
+      "short_name": "Scan",
+      "description": "Démarrer un nouveau scan en 3 minutes",
+      "url": "/?start=scan&source=pwa",
+      "icons": [{ "src": "/android-chrome-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mon espace",
+      "short_name": "Espace",
+      "description": "Mes pistes d'économie et mes gains",
+      "url": "/mon-compte?source=pwa",
+      "icons": [{ "src": "/android-chrome-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false
 }

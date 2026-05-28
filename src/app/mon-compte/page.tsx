@@ -1,11 +1,4 @@
 "use client";
-/**
- * Dashboard utilisateur — page perso connectée /mon-compte
- *
- * Affiche : welcome + gain potentiel + compteur "à vie" + leviers avec statut
- * interactif (À faire / En cours / Terminé) + saisie montant récupéré + accès
- * guides Premium + paramètres compte.
- */
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase, type Profile, type ActionStatus, type ActionState } from "@/lib/supabase";
@@ -22,6 +15,7 @@ import LeverCard from "@/components/dashboard/LeverCard";
 import DeclareAmountModal from "@/components/dashboard/DeclareAmountModal";
 import AccountSection from "@/components/dashboard/AccountSection";
 import EmptyState from "@/components/dashboard/EmptyState";
+import ShareEconomies from "@/components/dashboard/ShareEconomies";
 
 export default function MonComptePage() {
   const router = useRouter();
@@ -37,7 +31,6 @@ export default function MonComptePage() {
 
   const isPremium = profile?.is_premium || profile?.is_founder || false;
 
-  // === Chargement profil + analyse scan ===
   const loadProfile = useCallback(async (userId: string) => {
     const { data: p } = await supabase.from("profiles").select("*").eq("id", userId).single();
     if (!p) return;
@@ -52,7 +45,6 @@ export default function MonComptePage() {
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session?.user) {
-        // Pas connecté → redirige vers home (qui pourra ouvrir le modal auth)
         router.replace("/");
         return;
       }
@@ -62,12 +54,10 @@ export default function MonComptePage() {
     });
   }, [router, loadProfile]);
 
-  // === Total cumulé à vie (somme des montants déclarés) ===
   const gainRecupere = Object.values(actionsState).reduce((acc, st) => {
     return acc + (st.status === "done" && st.montant ? st.montant : 0);
   }, 0);
 
-  // === Persist actions_state + gains_total en BDD ===
   const saveActions = useCallback(
     async (next: Record<string, ActionState>) => {
       setActionsState(next);
@@ -111,7 +101,6 @@ export default function MonComptePage() {
     setDeclareFor(null);
   };
 
-  // === Auth callbacks ===
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/");
@@ -133,7 +122,6 @@ export default function MonComptePage() {
     }
   };
 
-  // === Render ===
   if (loading || !user) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: T.bg, color: T.textMuted }}>
@@ -142,7 +130,6 @@ export default function MonComptePage() {
     );
   }
 
-  // Regroupe les gains par catégorie (aide / assurance / abonnement / energie)
   const grouped: Record<string, Gain[]> = {};
   if (scanResult) {
     scanResult.gains.forEach((g) => {
@@ -176,7 +163,12 @@ export default function MonComptePage() {
                 nbPistes={scanResult.gains.length}
               />
 
-              {/* CTA Premium si pas Premium */}
+              <ShareEconomies
+                gainPotentiel={Math.round(((scanResult.gainMin + scanResult.gainMax) / 2) / 100) * 100}
+                gainRecupere={gainRecupere}
+                nbPistes={scanResult.gains.length}
+              />
+
               {!isPremium && (
                 <div
                   style={{
@@ -220,7 +212,6 @@ export default function MonComptePage() {
                 </div>
               )}
 
-              {/* Liste des leviers par catégorie */}
               {Object.entries(grouped).map(([cat, items]) => (
                 <div key={cat} style={{ marginBottom: "28px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
@@ -245,7 +236,6 @@ export default function MonComptePage() {
                 </div>
               ))}
 
-              {/* Bloc infos contextuelles si présentes */}
               {scanResult.infos.length > 0 && (
                 <div style={{ marginBottom: "28px" }}>
                   <h3 style={{ fontSize: "13px", fontWeight: 700, color: T.textSoft, textTransform: "uppercase", marginBottom: "12px" }}>
