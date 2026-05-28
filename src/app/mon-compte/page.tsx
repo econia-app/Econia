@@ -16,6 +16,7 @@ import DeclareAmountModal from "@/components/dashboard/DeclareAmountModal";
 import AccountSection from "@/components/dashboard/AccountSection";
 import EmptyState from "@/components/dashboard/EmptyState";
 import ShareEconomies from "@/components/dashboard/ShareEconomies";
+import SubscriptionSection from "@/components/dashboard/SubscriptionSection";
 
 export default function MonComptePage() {
   const router = useRouter();
@@ -169,48 +170,7 @@ export default function MonComptePage() {
                 nbPistes={scanResult.gains.length}
               />
 
-              {!isPremium && (
-                <div
-                  style={{
-                    background: T.bgCard,
-                    border: `2px solid ${T.blue}`,
-                    borderRadius: "16px",
-                    padding: "18px 22px",
-                    marginBottom: "28px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "14px",
-                    flexWrap: "wrap",
-                    boxShadow: "0 8px 24px rgba(37,99,235,0.08)",
-                  }}
-                >
-                  <div style={{ flex: "1 1 220px" }}>
-                    <div style={{ fontSize: "14px", fontWeight: 700, color: T.navy, marginBottom: "2px" }}>
-                      🔓 Débloque les guides d&apos;action pas à pas
-                    </div>
-                    <div style={{ fontSize: "12px", color: T.textSoft, lineHeight: 1.4 }}>
-                      Tu passes à l&apos;action plus vite avec les scripts de négociation et les démarches détaillées.
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => alert("Stripe arrive bientôt — contacte Julien pour activer Premium manuellement.")}
-                    style={{
-                      padding: "12px 22px",
-                      background: T.blue,
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "12px",
-                      fontSize: "13px",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      whiteSpace: "nowrap",
-                      minHeight: 44,
-                    }}
-                  >
-                    Passer Premium
-                  </button>
-                </div>
-              )}
+              <SubscriptionSection user={user} profile={profile} />
 
               {Object.entries(grouped).map(([cat, items]) => (
                 <div key={cat} style={{ marginBottom: "28px" }}>

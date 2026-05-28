@@ -12,9 +12,19 @@ export type ActionStatus = "todo" | "doing" | "done";
 
 export type ActionState = {
   status: ActionStatus;
-  montant?: number; // montant déclaré récupéré (€) — uniquement si done
-  date?: string; // ISO timestamp passage en "done"
+  montant?: number;
+  date?: string;
 };
+
+export type SubscriptionStatus =
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "incomplete"
+  | "incomplete_expired"
+  | "unpaid"
+  | null;
 
 export type Profile = {
   id: string;
@@ -22,8 +32,10 @@ export type Profile = {
   is_premium: boolean;
   is_founder: boolean;
   scan_data: Record<string, string> | null;
-  /** Total cumulé déclaré par l'utilisateur (calculé côté front à partir d'actions_state) */
   gains_total: number;
-  /** Map<gain_title, ActionState> — état de chaque levier pour cet utilisateur */
   actions_state: Record<string, ActionState> | null;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  subscription_status: SubscriptionStatus;
+  subscription_period_end: string | null;
 };
