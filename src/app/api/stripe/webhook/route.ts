@@ -77,8 +77,15 @@ export async function POST(req: Request) {
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
         const userId = sub.metadata?.supabase_user_id;
-        const periodEnd = sub.current_period_end
-          ? new Date(sub.current_period_end * 1000).toISOString()
+        // current_period_end a migré de l'abonnement vers ses "items" dans les
+        // versions récentes de l'API Stripe. On lit tolérant : nouvel emplacement
+        // (items) puis ancien (racine), pour rester correct quelle que soit la version.
+        const currentPeriodEnd =
+          (sub as unknown as { current_period_end?: number }).current_period_end ??
+          (sub.items?.data?.[0] as unknown as { current_period_end?: number } | undefined)
+            ?.current_period_end;
+        const periodEnd = currentPeriodEnd
+          ? new Date(currentPeriodEnd * 1000).toISOString()
           : null;
         if (userId) {
           await admin
@@ -111,10 +118,20 @@ export async function POST(req: Request) {
 
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
-        const subId =
-          typeof invoice.subscription === "string"
-            ? invoice.subscription
-            : invoice.subscription?.id;
+        // invoice.subscription a été retiré du type Invoice dans les versions
+        // récentes de l'API Stripe ; l'abonnement lié se trouve désormais sous
+        // invoice.parent.subscription_details.subscription. On lit les deux.
+        const invRef = invoice as unknown as {
+          subscription?: string | { id?: string } | null;
+          parent?: {
+            subscription_details?: { subscription?: string | { id?: string } | null };
+          };
+        };
+        const rawSub =
+          invRef.subscription ??
+          invRef.parent?.subscription_details?.subscription ??
+          null;
+        const subId = typeof rawSub === "string" ? rawSub : rawSub?.id;
         if (subId) {
           // On marque past_due mais on garde is_premium = true tant que Stripe ne cancel pas
           await admin
