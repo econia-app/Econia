@@ -65,10 +65,13 @@ export default function Home() {
   }, [fetchProfile]);
 
   useEffect(() => {
+    // Total réel des pré-inscriptions, identique pour tous les visiteurs.
+    // Passe par la fonction Supabase get_waitlist_count() (SECURITY DEFINER)
+    // pour contourner la règle RLS qui, sinon, ne compterait que la ligne
+    // visible par la session courante (cf. bug "compteur différent par appareil").
     supabase
-      .from("profiles")
-      .select("*", { count: "exact", head: true })
-      .then(({ count }) => setWaitlistCount(count || 0));
+      .rpc("get_waitlist_count")
+      .then(({ data }) => setWaitlistCount(data ?? 0));
   }, []);
 
   useEffect(() => {
