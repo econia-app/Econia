@@ -25,7 +25,10 @@ if (!SECRET) {
 }
 
 export const stripe = new Stripe(SECRET || "sk_live_missing", {
-  apiVersion: "2025-09-30.clover" as Stripe.LatestApiVersion,
+  // Version d'API alignée sur celle embarquée par le SDK stripe@22 installé.
+  // (On ne caste plus vers Stripe.LatestApiVersion : ce type n'existe pas dans
+  // cette version du SDK et cassait le build Vercel.)
+  apiVersion: "2026-05-27.dahlia",
   typescript: true,
 });
 
