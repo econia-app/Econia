@@ -157,6 +157,24 @@ export default function Home() {
     setVisNum(1);
   };
 
+  // Capture "filet" : enregistre un email (+ le scan) dans la waitlist, sans
+  // création de compte. La sécurité (insertion seule, anti-doublon) est gérée
+  // par les policies RLS Supabase sur la table waitlist.
+  const joinWaitlist = useCallback(
+    async (email: string): Promise<"ok" | "dup" | "error"> => {
+      const clean = email.trim().toLowerCase();
+      const { error } = await supabase
+        .from("waitlist")
+        .insert({ email: clean, scan_data: answers });
+      if (!error) return "ok";
+      // 23505 = violation de contrainte d'unicité => email déjà inscrit
+      if (error.code === "23505") return "dup";
+      console.error("[Econia] Erreur inscription waitlist:", error.message, error);
+      return "error";
+    },
+    [answers]
+  );
+
   return (
     <>
       <Navbar
@@ -196,6 +214,7 @@ export default function Home() {
           onShowAuth={() => setShowAuth(true)}
           onOpenGuide={(key) => setOpenGuide(key)}
           onReset={reset}
+          onJoinWaitlist={joinWaitlist}
         />
       )}
 

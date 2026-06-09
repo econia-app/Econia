@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { T, fonts, catLabels, catColors } from "@/lib/theme";
 import { guides, gainToGuide } from "@/lib/guides";
 import type { ScanResult, Gain } from "@/lib/analyze";
@@ -11,7 +12,117 @@ type Props = {
   onShowAuth: () => void;
   onOpenGuide: (key: string) => void;
   onReset: () => void;
+  /** Enregistre un email dans la waitlist (capture légère, sans création de compte). */
+  onJoinWaitlist?: (email: string) => Promise<"ok" | "dup" | "error">;
 };
+
+/**
+ * Encart de capture email "filet" sur l'écran résultat : permet à un visiteur
+ * non inscrit de réserver sa place en laissant juste son email (zéro friction),
+ * au lieu de devoir créer un compte complet. Garde le CTA compte en option.
+ */
+function WaitlistCapture({
+  spotsLeft,
+  onJoinWaitlist,
+  onShowAuth,
+}: {
+  spotsLeft: number;
+  onJoinWaitlist?: (email: string) => Promise<"ok" | "dup" | "error">;
+  onShowAuth: () => void;
+}) {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "ok" | "dup" | "error">("idle");
+
+  const submit = async () => {
+    const clean = email.trim();
+    // Validation minimale (la vraie unicité/validation est côté base)
+    if (!clean.includes("@") || !clean.includes(".") || !onJoinWaitlist) {
+      setStatus("error");
+      return;
+    }
+    setStatus("loading");
+    setStatus(await onJoinWaitlist(clean));
+  };
+
+  const boxStyle = {
+    background: T.greenLight,
+    border: `1px solid ${T.green}33`,
+    borderRadius: "14px",
+    padding: "22px",
+    textAlign: "center" as const,
+    marginTop: "28px",
+  };
+
+  // Confirmation (succès ou email déjà présent → même message rassurant)
+  if (status === "ok" || status === "dup") {
+    return (
+      <div style={boxStyle}>
+        <div style={{ fontSize: "34px", marginBottom: "8px" }}>✅</div>
+        <p style={{ fontSize: "15px", color: T.green, fontWeight: 700, marginBottom: "8px" }}>
+          {status === "ok" ? "Ta place est réservée !" : "Tu es déjà sur la liste !"}
+        </p>
+        <p style={{ fontSize: "13px", color: T.textSoft, marginBottom: "16px" }}>
+          On te prévient dès qu&apos;il y a du nouveau. Tu veux aussi sauvegarder ton analyse et débloquer ton tableau de bord&nbsp;?
+        </p>
+        <button
+          onClick={onShowAuth}
+          style={{ padding: "12px 30px", background: T.green, color: "#fff", border: "none", borderRadius: "12px", fontSize: "14px", fontWeight: 700, cursor: "pointer", minHeight: 44 }}
+        >
+          Créer mon compte gratuit
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={boxStyle}>
+      <p style={{ fontSize: "15px", color: T.green, fontWeight: 700, marginBottom: "6px" }}>
+        Garde ta place sur la liste
+      </p>
+      <p style={{ fontSize: "13px", color: T.textSoft, marginBottom: "16px" }}>
+        {spotsLeft > 0
+          ? `Laisse ton email : on te prévient au lancement et dès qu'une place Founder se libère. Plus que ${spotsLeft} places.`
+          : "Laisse ton email pour être prévenu·e des prochaines offres."}
+      </p>
+      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "center", maxWidth: 420, margin: "0 auto" }}>
+        <input
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          placeholder="ton@email.fr"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (status === "error") setStatus("idle");
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") submit();
+          }}
+          aria-label="Ton adresse email"
+          style={{ flex: "1 1 200px", padding: "12px 14px", borderRadius: "12px", border: `1px solid ${T.border}`, fontSize: "14px", minHeight: 44 }}
+        />
+        <button
+          onClick={submit}
+          disabled={status === "loading"}
+          style={{ padding: "12px 24px", background: T.green, color: "#fff", border: "none", borderRadius: "12px", fontSize: "14px", fontWeight: 700, cursor: status === "loading" ? "default" : "pointer", opacity: status === "loading" ? 0.7 : 1, whiteSpace: "nowrap", minHeight: 44 }}
+        >
+          {status === "loading" ? "..." : "Réserver ma place"}
+        </button>
+      </div>
+      {status === "error" && (
+        <p role="alert" style={{ fontSize: "12px", color: T.red, marginTop: "10px" }}>
+          Email invalide ou problème réseau. Réessaie.
+        </p>
+      )}
+      <button
+        onClick={onShowAuth}
+        style={{ background: "none", border: "none", color: T.textSoft, fontSize: "12px", cursor: "pointer", textDecoration: "underline", marginTop: "14px" }}
+      >
+        Ou crée un compte complet maintenant
+      </button>
+    </div>
+  );
+}
 
 export default function ResultsView({
   data,
@@ -21,6 +132,7 @@ export default function ResultsView({
   onShowAuth,
   onOpenGuide,
   onReset,
+  onJoinWaitlist,
 }: Props) {
   const grouped: Record<string, Gain[]> = {};
   data.gains.forEach((g) => {
@@ -188,22 +300,11 @@ export default function ResultsView({
         )}
 
         {!user && (
-          <div style={{ background: T.greenLight, border: `1px solid ${T.green}33`, borderRadius: "14px", padding: "22px", textAlign: "center", marginTop: "28px" }}>
-            <p style={{ fontSize: "15px", color: T.green, fontWeight: 700, marginBottom: "8px" }}>
-              Crée ton compte pour sauvegarder tes résultats
-            </p>
-            <p style={{ fontSize: "13px", color: T.textSoft, marginBottom: "16px" }}>
-              {spotsLeft > 0
-                ? `50 premiers : 1er mois gratuit + 3,49€/mois pendant 6 mois. Plus que ${spotsLeft} places.`
-                : "Inscris-toi pour être prévenu·e des prochaines offres."}
-            </p>
-            <button
-              onClick={onShowAuth}
-              style={{ padding: "12px 30px", background: T.green, color: "#fff", border: "none", borderRadius: "12px", fontSize: "14px", fontWeight: 700, cursor: "pointer" }}
-            >
-              Créer mon compte gratuit
-            </button>
-          </div>
+          <WaitlistCapture
+            spotsLeft={spotsLeft}
+            onJoinWaitlist={onJoinWaitlist}
+            onShowAuth={onShowAuth}
+          />
         )}
 
         <div style={{ textAlign: "center", marginTop: "24px" }}>
