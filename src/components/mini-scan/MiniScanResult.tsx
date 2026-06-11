@@ -127,16 +127,45 @@ export default function MiniScanResult({
         </div>
       )}
 
-      {/* Notes pédagogiques */}
-      {notes.length > 0 && (
-        <div style={{ background: T.bgWarm, borderRadius: "14px", padding: "18px 20px", marginBottom: "20px" }}>
-          {notes.map((note, i) => (
-            <p key={i} style={{ fontSize: "13px", color: T.textSoft, lineHeight: 1.6, margin: i > 0 ? "12px 0 0" : 0 }}>
-              {note}
+      {/* Plan d'action — ESTIMATION GRATUITE, ACTION PAYANTE.
+          Le montant estimé reste visible par tous (hameçon + SEO) ; les étapes
+          concrètes pour récupérer l'argent sont réservées aux abonnés. */}
+      {notes.length > 0 &&
+        (isPremium ? (
+          <div style={{ background: T.bgWarm, borderRadius: "14px", padding: "18px 20px", marginBottom: "20px" }}>
+            <div style={{ fontSize: "12px", fontWeight: 700, color: T.green, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "10px" }}>
+              ✅ Ton plan d&apos;action
+            </div>
+            {notes.map((note, i) => (
+              <p key={i} style={{ fontSize: "13px", color: T.textSoft, lineHeight: 1.6, margin: i > 0 ? "12px 0 0" : 0 }}>
+                {note}
+              </p>
+            ))}
+          </div>
+        ) : (
+          <button
+            onClick={onUpgrade}
+            style={{
+              width: "100%",
+              textAlign: "left",
+              background: T.bgWarm,
+              borderRadius: "14px",
+              padding: "18px 20px",
+              marginBottom: "20px",
+              border: `1px dashed ${T.border}`,
+              cursor: "pointer",
+            }}
+          >
+            <div style={{ fontSize: "14px", fontWeight: 700, color: T.navy, marginBottom: "6px" }}>
+              🔒 Ton plan d&apos;action en {notes.length} étape{notes.length > 1 ? "s" : ""}
+            </div>
+            <p style={{ fontSize: "13px", color: T.textSoft, lineHeight: 1.6, margin: 0 }}>
+              Les étapes concrètes pour récupérer cet argent (démarches, résiliation,
+              comparateurs, lettres types, pièges à éviter) sont réservées aux abonnés.
+              <span style={{ color: T.blue, fontWeight: 700 }}> Débloquer →</span>
             </p>
-          ))}
-        </div>
-      )}
+          </button>
+        ))}
 
       {/* Bouton démarche officielle */}
       <a
