@@ -342,6 +342,7 @@ export const gainToMiniScan: Record<string, string> = {
   "Assurance emprunteur (loi Lemoine)": "/aide/loi-lemoine",
   "Assurances non comparées": "/aide/assurances",
   "Doublons carte bancaire": "/aide/assurances",
+  "Optimisation énergie": "/aide/energie",
 };
 
 export const gainToGuide: Record<string, string> = {

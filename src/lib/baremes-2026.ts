@@ -314,3 +314,27 @@ export const ASSURANCES_2026 = {
   infoUrl: "https://www.service-public.fr/particuliers/vosdroits/F2627",
   dateBareme: "2026-01-01",
 } as const;
+
+// ============================================================
+// ÉNERGIE — comparaison fournisseur + option tarifaire + puissance 2026
+// (diagnostic + plan d'action)
+// Sources : fournisseurs-electricite.com, kelwatt, Selectra, hellowatt 2026.
+// Repères : offre marché ~100-170€/an d'économie vs Tarif Bleu ; HC 0,1579€ vs
+// HP 0,2065€ (6 kVA, TRV) ; chaque palier de puissance ≈ 40-50€/an d'abonnement.
+// Fourchettes PRUDENTES.
+// ============================================================
+export const ENERGIE_2026 = {
+  /** Économie annuelle réaliste en passant à une offre de marché moins chère (€/an) */
+  economieFournisseur: [80, 170],
+  /** Économie annuelle réaliste en passant en option Heures Creuses si conso décalable (€/an) */
+  economieHeuresCreuses: [40, 130],
+  /** Coût annuel par palier de puissance souscrite (€/an) — gain si puissance réduite */
+  coutParPalierPuissance: 45,
+  /** Seuil d'économie annuelle à partir duquel on considère le profil "à optimiser" */
+  seuilSignificatif: 50,
+
+  // Comparateur public et indépendant du Médiateur national de l'énergie
+  simulateurUrl: "https://comparateur.energie-info.fr/",
+  infoUrl: "https://www.energie-info.fr/",
+  dateBareme: "2026-06-01",
+} as const;
