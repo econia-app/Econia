@@ -19,6 +19,8 @@ const MINI_SCAN_URL: Record<string, string> = {
   "Chèque énergie": "/aide/cheque-energie",
   "ASPA (minimum vieillesse)": "/aide/aspa",
   "Assurance emprunteur (loi Lemoine)": "/aide/loi-lemoine",
+  "Assurances non comparées": "/aide/assurances",
+  "Doublons carte bancaire": "/aide/assurances",
 };
 
 type Props = {
