@@ -343,6 +343,7 @@ export const gainToMiniScan: Record<string, string> = {
   "Assurances non comparées": "/aide/assurances",
   "Doublons carte bancaire": "/aide/assurances",
   "Optimisation énergie": "/aide/energie",
+  "Abonnements fantômes": "/aide/abonnements",
 };
 
 export const gainToGuide: Record<string, string> = {

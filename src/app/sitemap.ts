@@ -38,6 +38,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "loi-lemoine",
     "assurances",
     "energie",
+    "abonnements",
   ].map((slug) => ({
     url: `${BASE_URL}/aide/${slug}`,
     lastModified: now,

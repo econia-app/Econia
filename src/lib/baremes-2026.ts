@@ -338,3 +338,28 @@ export const ENERGIE_2026 = {
   infoUrl: "https://www.energie-info.fr/",
   dateBareme: "2026-06-01",
 } as const;
+
+// ============================================================
+// ABONNEMENTS fantômes 2026 (diagnostic + plan d'action)
+// Sources : enquêtes 2025-2026 (1 Français/3 paie un abonnement inutilisé,
+// ~15 % des abonnements payés non exploités, 9,9 à 18 abonnements/personne).
+// Fourchette PLAFONNÉE à 200-500€/an (décision projet : ne pas gonfler à 750€+).
+// ============================================================
+export const ABONNEMENTS_2026 = {
+  /** Potentiel d'économie annuelle selon le nombre d'abonnements (€/an) */
+  potentielParNombre: {
+    peu: [40, 120], // 1 à 4 abonnements
+    moyen: [100, 260], // 5 à 9
+    beaucoup: [180, 450], // 10 et +
+    inconnu: [120, 300], // ne sait pas
+  },
+  /** Plafond annuel retenu (décision projet, pas de sur-promesse) */
+  plafond: 500,
+  /** Seuil d'économie annuelle à partir duquel on considère le profil "à optimiser" */
+  seuilSignificatif: 50,
+
+  // Ressource publique officielle : résiliation en 3 clics (obligatoire depuis 2023)
+  simulateurUrl: "https://www.service-public.fr/particuliers/vosdroits/F36364",
+  infoUrl: "https://www.economie.gouv.fr/particuliers/resiliation-contrat-trois-clics",
+  dateBareme: "2026-01-01",
+} as const;
