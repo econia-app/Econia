@@ -2,26 +2,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { T, catColors } from "@/lib/theme";
-import { guides, gainToGuide } from "@/lib/guides";
+import { guides, gainToGuide, gainToMiniScan } from "@/lib/guides";
 import type { Gain } from "@/lib/analyze";
 import type { ActionState, ActionStatus } from "@/lib/supabase";
-
-/**
- * Mapping gain → URL du mini-scan dédié.
- * À étendre quand on créera les autres mini-scans (abonnements, leasing, etc.)
- */
-const MINI_SCAN_URL: Record<string, string> = {
-  "Prime d'activité": "/aide/prime-activite",
-  RSA: "/aide/rsa",
-  APL: "/aide/apl",
-  "Allocation rentrée scolaire": "/aide/ars",
-  "Complémentaire Santé Solidaire": "/aide/complementaire-sante",
-  "Chèque énergie": "/aide/cheque-energie",
-  "ASPA (minimum vieillesse)": "/aide/aspa",
-  "Assurance emprunteur (loi Lemoine)": "/aide/loi-lemoine",
-  "Assurances non comparées": "/aide/assurances",
-  "Doublons carte bancaire": "/aide/assurances",
-};
 
 type Props = {
   gain: Gain;
@@ -58,7 +41,7 @@ export default function LeverCard({
 
   const guideKey = gainToGuide[gain.title];
   const guide = guideKey ? guides[guideKey] : null;
-  const miniScanUrl = MINI_SCAN_URL[gain.title]; // ex: "/aide/prime-activite"
+  const miniScanUrl = gainToMiniScan[gain.title]; // ex: "/aide/prime-activite"
 
   return (
     <div

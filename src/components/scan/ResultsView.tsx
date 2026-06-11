@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { T, fonts, catLabels, catColors } from "@/lib/theme";
-import { guides, gainToGuide } from "@/lib/guides";
+import { guides, gainToGuide, gainToMiniScan } from "@/lib/guides";
 import type { ScanResult, Gain } from "@/lib/analyze";
 
 type Props = {
@@ -232,6 +233,7 @@ export default function ResultsView({
             {items.map((g, i) => {
               const gk = gainToGuide[g.title];
               const gd = gk ? guides[gk] : null;
+              const miniScanUrl = gainToMiniScan[g.title];
               return (
                 <div key={i} style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "14px", padding: "16px", marginBottom: "8px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: "10px" }}>
@@ -256,24 +258,35 @@ export default function ResultsView({
                       {g.montant}
                     </div>
                   </div>
-                  {gd && (
-                    <div style={{ marginTop: "12px", borderTop: `1px solid ${T.borderLight}`, paddingTop: "12px" }}>
-                      {isPremium ? (
-                        <button
-                          onClick={() => onOpenGuide(gk)}
-                          style={{ width: "100%", padding: "10px", background: T.blueLight, color: T.blue, border: `1px solid ${T.blue}33`, borderRadius: "10px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
+                  {(gd || miniScanUrl) && (
+                    <div style={{ marginTop: "12px", borderTop: `1px solid ${T.borderLight}`, paddingTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      {/* Mini-scan détaillé — GRATUIT (estimation = hameçon).
+                          Le plan d'action concret y est verrouillé pour les non-abonnés. */}
+                      {miniScanUrl && (
+                        <Link
+                          href={miniScanUrl}
+                          style={{ display: "block", width: "100%", boxSizing: "border-box", padding: "10px", background: T.greenLight, color: T.green, border: `1px solid ${T.green}33`, borderRadius: "10px", fontSize: "12px", fontWeight: 700, cursor: "pointer", textAlign: "center", textDecoration: "none" }}
                         >
-                          📖 Voir le guide pas à pas ({gd.steps.length} étapes)
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => (user ? undefined : onShowAuth())}
-                          style={{ width: "100%", padding: "10px", background: T.bg, color: T.textMuted, border: `1px dashed ${T.border}`, borderRadius: "10px", fontSize: "12px", cursor: "pointer" }}
-                        >
-                          🔒 Guide pas à pas ({gd.steps.length} étapes) —{" "}
-                          {user ? "Econia Premium" : "Crée un compte"}
-                        </button>
+                          🎯 Estimer mon montant →
+                        </Link>
                       )}
+                      {gd &&
+                        (isPremium ? (
+                          <button
+                            onClick={() => onOpenGuide(gk)}
+                            style={{ width: "100%", padding: "10px", background: T.blueLight, color: T.blue, border: `1px solid ${T.blue}33`, borderRadius: "10px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
+                          >
+                            📖 Voir le guide pas à pas ({gd.steps.length} étapes)
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => (user ? undefined : onShowAuth())}
+                            style={{ width: "100%", padding: "10px", background: T.bg, color: T.textMuted, border: `1px dashed ${T.border}`, borderRadius: "10px", fontSize: "12px", cursor: "pointer" }}
+                          >
+                            🔒 Guide pas à pas ({gd.steps.length} étapes) —{" "}
+                            {user ? "Econia Premium" : "Crée un compte"}
+                          </button>
+                        ))}
                     </div>
                   )}
                 </div>

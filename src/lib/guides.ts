@@ -326,6 +326,24 @@ export const guides: Record<string, Guide> = {
 // ─────────────────────────────────────────────────────────
 // Mapping gains détectés → guide correspondant
 // ─────────────────────────────────────────────────────────
+/**
+ * Mapping gain → URL du mini-scan dédié (estimation détaillée d'un levier).
+ * Source de vérité unique, utilisée par l'écran résultat (ResultsView) ET le
+ * tableau de bord (LeverCard). À étendre quand on crée un nouveau mini-scan.
+ */
+export const gainToMiniScan: Record<string, string> = {
+  "Prime d'activité": "/aide/prime-activite",
+  RSA: "/aide/rsa",
+  APL: "/aide/apl",
+  "Allocation rentrée scolaire": "/aide/ars",
+  "Complémentaire Santé Solidaire": "/aide/complementaire-sante",
+  "Chèque énergie": "/aide/cheque-energie",
+  "ASPA (minimum vieillesse)": "/aide/aspa",
+  "Assurance emprunteur (loi Lemoine)": "/aide/loi-lemoine",
+  "Assurances non comparées": "/aide/assurances",
+  "Doublons carte bancaire": "/aide/assurances",
+};
+
 export const gainToGuide: Record<string, string> = {
   "Assurances non comparées": "assurance_compare",
   "Doublons carte bancaire": "doublons_cb",
