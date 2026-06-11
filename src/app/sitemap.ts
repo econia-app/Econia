@@ -36,6 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "cheque-energie",
     "aspa",
     "loi-lemoine",
+    "assurances",
   ].map((slug) => ({
     url: `${BASE_URL}/aide/${slug}`,
     lastModified: now,

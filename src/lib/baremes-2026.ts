@@ -286,3 +286,31 @@ export const CHEQUE_ENERGIE_2026 = {
   infoUrl: "https://chequeenergie.gouv.fr/",
   dateBareme: "2026-04-01",
 } as const;
+
+// ============================================================
+// ASSURANCES — comparaison + doublons 2026 (diagnostic + plan d'action)
+// Sources : baromètres assurance auto/habitation 2026 (LeLynx, Lesfurets,
+// Assurland) ; MoneyVox (assurance des moyens de paiement, moyenne 27,85€/an) ;
+// ACPR (assurance des moyens de paiement = "intérêt marginal pour le client").
+// Fourchettes volontairement PRUDENTES (sous-estimation).
+// ============================================================
+export const ASSURANCES_2026 = {
+  /** Économie annuelle réaliste en comparant son assurance AUTO (€/an) */
+  economieAuto: [120, 250],
+  /** Économie annuelle réaliste en comparant son assurance HABITATION (€/an) */
+  economieHabitation: [40, 120],
+  /** Coût moyen de l'"assurance des moyens de paiement" bancaire (€/an) */
+  coutAssuranceMoyensPaiement: 28,
+  /** Économie sur les assurances "affinitaires" en doublon (voyage, casse,
+   *  annulation, téléphone) souvent déjà couvertes par une CB haut de gamme (€/an) */
+  economieDoublonsAffinitaires: [50, 150],
+  /** Seuil d'économie annuelle à partir duquel on considère le profil "à optimiser" */
+  seuilSignificatif: 50,
+
+  loiHamonRef: "Loi n° 2014-344 du 17 mars 2014 (loi Hamon)",
+  acprAvis:
+    "L'ACPR juge l'assurance des moyens de paiement « d'intérêt marginal » : la banque doit déjà rembourser les opérations frauduleuses.",
+  simulateurUrl: "https://www.lesfurets.com/assurance",
+  infoUrl: "https://www.service-public.fr/particuliers/vosdroits/F2627",
+  dateBareme: "2026-01-01",
+} as const;
