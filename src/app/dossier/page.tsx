@@ -8,6 +8,7 @@ import type { Dossier } from "@/lib/dossier";
 import Navbar from "@/components/Navbar";
 import AuthModal from "@/components/AuthModal";
 import DossierManager from "@/components/dossier/DossierManager";
+import DossierIcon from "@/components/dossier/DossierIcon";
 
 export default function DossierPage() {
   const router = useRouter();
@@ -74,9 +75,12 @@ export default function DossierPage() {
             <span style={{ color: T.navy }}>Mon dossier</span>
           </nav>
 
-          <h1 style={{ fontFamily: fonts.title, fontSize: "clamp(28px, 5vw, 36px)", fontWeight: 600, letterSpacing: "-1.5px", marginBottom: "8px" }}>
-            Mon dossier
-          </h1>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
+            <DossierIcon size={40} />
+            <h1 style={{ fontFamily: fonts.title, fontSize: "clamp(28px, 5vw, 36px)", fontWeight: 600, letterSpacing: "-1.5px", margin: 0 }}>
+              Mon dossier
+            </h1>
+          </div>
           <p style={{ fontSize: "15px", color: T.textSoft, lineHeight: 1.6, marginBottom: "28px", maxWidth: "560px" }}>
             Renseigne ici tes contrats et infos. Tout est sauvegardé dans ton compte et te servira de base pour les parcours d&apos;action (et pour ne plus rien oublier).
           </p>
