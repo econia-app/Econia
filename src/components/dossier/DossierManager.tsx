@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { T, fonts } from "@/lib/theme";
 import {
   DOSSIER_SECTIONS,
@@ -9,6 +10,55 @@ import {
   type DossierField,
   type DossierSectionConfig,
 } from "@/lib/dossier";
+
+/** Données structurées renvoyées par /api/read-document. */
+type Extracted = {
+  categorie?: string;
+  type?: string;
+  fournisseur?: string;
+  montant_annuel?: string;
+  franchise?: string;
+  echeance?: string;
+  numero_contrat?: string;
+  garanties?: string[];
+  resume?: string;
+};
+
+/** Convertit un fichier en base64 (sans le préfixe data:). */
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+    reader.onerror = () => reject(new Error("read error"));
+    reader.readAsDataURL(file);
+  });
+}
+
+/** Mappe les données extraites vers les champs de la section concernée. */
+function mapExtraction(sectionKey: string, d: Extracted): Record<string, string> {
+  const garanties = Array.isArray(d.garanties) ? d.garanties.join(", ") : "";
+  const notes = [
+    d.resume,
+    garanties ? `Garanties : ${garanties}` : "",
+    d.franchise ? `Franchise : ${d.franchise}€` : "",
+  ].filter(Boolean).join(" — ");
+  let raw: Record<string, string | undefined>;
+  if (sectionKey === "assurances") {
+    raw = { type: d.type, assureur: d.fournisseur, montant: d.montant_annuel, echeance: d.echeance, numero: d.numero_contrat, notes };
+  } else if (sectionKey === "energie") {
+    raw = { type: d.type, fournisseur: d.fournisseur, offre: d.resume, montant: d.montant_annuel, notes };
+  } else if (sectionKey === "abonnements") {
+    raw = { nom: d.fournisseur || d.type, montant: d.montant_annuel, notes };
+  } else if (sectionKey === "aides") {
+    raw = { nom: d.type, organisme: d.fournisseur, montant: d.montant_annuel, notes };
+  } else {
+    raw = {};
+  }
+  // On ne garde que les valeurs réellement remplies (ne pas écraser avec du vide)
+  return Object.fromEntries(
+    Object.entries(raw).filter(([, v]) => v != null && v !== "")
+  ) as Record<string, string>;
+}
 
 type Props = {
   initial: Dossier;
@@ -77,6 +127,41 @@ export default function DossierManager({ initial, onSave }: Props) {
   const [data, setData] = useState<Dossier>(initial);
   // Édition en cours : { section, entry }. entry.id absent dans data => ajout.
   const [editing, setEditing] = useState<{ section: string; entry: DossierEntry } | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+
+  // Lecture d'un contrat (PDF/photo) par l'IA → pré-remplit les champs.
+  const handleImport = async (sectionKey: string, file: File) => {
+    setImportError(null);
+    setImporting(true);
+    try {
+      const fileBase64 = await fileToBase64(file);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) {
+        setImportError("Reconnecte-toi pour importer un document.");
+        return;
+      }
+      const resp = await fetch("/api/read-document", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+        body: JSON.stringify({ fileBase64, mediaType: file.type }),
+      });
+      const json = await resp.json();
+      if (!resp.ok) {
+        setImportError(json.error || "La lecture a échoué.");
+        return;
+      }
+      const mapped = mapExtraction(sectionKey, (json.data || {}) as Extracted);
+      setEditing((cur) => (cur ? { ...cur, entry: { ...cur.entry, ...mapped } } : cur));
+    } catch {
+      setImportError("Problème réseau. Réessaie.");
+    } finally {
+      setImporting(false);
+    }
+  };
 
   const persist = (next: Dossier) => {
     setData(next);
@@ -135,6 +220,31 @@ export default function DossierManager({ initial, onSave }: Props) {
             {/* Formulaire d'ajout / modification */}
             {isEditingHere && editing && (
               <div style={{ background: T.bgCard, border: `1.5px solid ${section.color}55`, borderRadius: "14px", padding: "18px", marginBottom: "12px" }}>
+                {/* Lecture automatique d'un contrat (PDF/photo) → pré-remplissage */}
+                <div style={{ marginBottom: "16px", paddingBottom: "16px", borderBottom: `1px solid ${T.borderLight}` }}>
+                  <label
+                    style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "10px 16px", background: section.color + "12", color: section.color, border: `1px dashed ${section.color}55`, borderRadius: "10px", fontSize: "13px", fontWeight: 700, cursor: importing ? "default" : "pointer", opacity: importing ? 0.7 : 1 }}
+                  >
+                    {importing ? "⏳ Lecture en cours…" : "📄 Importer un contrat (PDF / photo)"}
+                    <input
+                      type="file"
+                      accept="application/pdf,image/jpeg,image/png,image/webp"
+                      disabled={importing}
+                      style={{ display: "none" }}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) handleImport(section.key, f);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                  <p style={{ fontSize: "11px", color: T.textMuted, lineHeight: 1.5, margin: "8px 0 0" }}>
+                    Econia lit ton document et remplit les champs pour toi. Vérifie toujours les infos. Le fichier n&apos;est pas conservé.
+                  </p>
+                  {importError && (
+                    <p role="alert" style={{ fontSize: "12px", color: T.red, margin: "8px 0 0" }}>{importError}</p>
+                  )}
+                </div>
                 {section.fields.map((f) => (
                   <Field
                     key={f.key}
