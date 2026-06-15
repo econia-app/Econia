@@ -3,11 +3,12 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase, type Profile, type ActionStatus, type ActionState } from "@/lib/supabase";
 import { analyzeProfile, type ScanResult, type Gain } from "@/lib/analyze";
+import { gainToGuide } from "@/lib/guides";
 import { T, catLabels, catColors } from "@/lib/theme";
 
 import Navbar from "@/components/Navbar";
 import AuthModal from "@/components/AuthModal";
-import GuideModal from "@/components/GuideModal";
+import GuideParcours from "@/components/GuideParcours";
 
 import WelcomeBlock from "@/components/dashboard/WelcomeBlock";
 import GainSummary from "@/components/dashboard/GainSummary";
@@ -30,6 +31,7 @@ export default function MonComptePage() {
   const [showAuth, setShowAuth] = useState(false);
   const [openGuide, setOpenGuide] = useState<string | null>(null);
   const [declareFor, setDeclareFor] = useState<Gain | null>(null);
+  const [guideProgress, setGuideProgress] = useState<Record<string, { steps: number[] }>>({});
 
   const isPremium = profile?.is_premium || profile?.is_founder || false;
 
@@ -39,6 +41,7 @@ export default function MonComptePage() {
     const prof = p as Profile;
     setProfile(prof);
     setActionsState((prof.actions_state as Record<string, ActionState>) || {});
+    setGuideProgress((prof.guide_progress as Record<string, { steps: number[] }>) || {});
     if (prof.scan_data) {
       setScanResult(analyzeProfile(prof.scan_data));
     }
@@ -76,6 +79,27 @@ export default function MonComptePage() {
     },
     [user]
   );
+
+  const toggleGuideStep = useCallback(
+    async (guideKey: string, index: number) => {
+      const cur = guideProgress[guideKey]?.steps || [];
+      const steps = cur.includes(index)
+        ? cur.filter((s) => s !== index)
+        : [...cur, index].sort((a, b) => a - b);
+      const next = { ...guideProgress, [guideKey]: { steps } };
+      setGuideProgress(next);
+      if (user) {
+        await supabase.from("profiles").update({ guide_progress: next }).eq("id", user.id);
+      }
+    },
+    [guideProgress, user]
+  );
+
+  const handleParcoursComplete = (guideKey: string) => {
+    const gain = scanResult?.gains.find((g) => gainToGuide[g.title] === guideKey) || null;
+    setOpenGuide(null);
+    if (gain) setDeclareFor(gain);
+  };
 
   const handleStatusChange = (gainTitle: string, status: ActionStatus) => {
     const prev = actionsState[gainTitle] || { status: "todo" };
@@ -242,7 +266,16 @@ export default function MonComptePage() {
       </main>
 
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />}
-      {openGuide && <GuideModal guideKey={openGuide} onClose={() => setOpenGuide(null)} />}
+      {openGuide && (
+        <GuideParcours
+          guideKey={openGuide}
+          doneSteps={guideProgress[openGuide]?.steps || []}
+          onToggleStep={(i) => toggleGuideStep(openGuide, i)}
+          onComplete={() => handleParcoursComplete(openGuide)}
+          onOpenDossier={() => router.push("/dossier")}
+          onClose={() => setOpenGuide(null)}
+        />
+      )}
       {declareFor && (
         <DeclareAmountModal
           gainTitle={declareFor.title}
