@@ -38,4 +38,8 @@ export type Profile = {
   stripe_subscription_id: string | null;
   subscription_status: SubscriptionStatus;
   subscription_period_end: string | null;
+  /** Coffre personnel : contrats/infos saisis par l'utilisateur, par section. */
+  dossier: Record<string, Array<{ id: string } & Record<string, string | number>>> | null;
+  /** Avancement des parcours guidés : { [guideKey]: { steps: number[] } }. */
+  guide_progress: Record<string, { steps: number[] }> | null;
 };

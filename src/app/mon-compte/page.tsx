@@ -153,6 +153,22 @@ export default function MonComptePage() {
         <div style={{ maxWidth: "900px", margin: "0 auto" }}>
           <WelcomeBlock email={user.email} isFounder={!!profile?.is_founder} isPremium={isPremium} />
 
+          <button
+            onClick={() => router.push("/dossier")}
+            style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "16px", padding: "16px 20px", marginBottom: "20px", cursor: "pointer" }}
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <span style={{ fontSize: "22px" }}>📁</span>
+              <span>
+                <span style={{ display: "block", fontSize: "15px", fontWeight: 700, color: T.navy }}>Mon dossier</span>
+                <span style={{ display: "block", fontSize: "12px", color: T.textSoft }}>
+                  Centralise tes contrats et infos {isPremium ? "" : "(abonnés)"}
+                </span>
+              </span>
+            </span>
+            <span style={{ color: T.blue, fontSize: "18px", fontWeight: 700 }}>→</span>
+          </button>
+
           {!scanResult ? (
             <EmptyState />
           ) : (
